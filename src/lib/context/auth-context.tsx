@@ -3,12 +3,14 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Provider } from '@supabase/supabase-js';
 import { createClient } from '../supabase/client';
-import { UserDetails, getUserDetails } from '../api';
+import { UserDetails, getUserDetails, checkApiStatus } from '../api';
 
 type AuthContextType = {
   user: User | null;
   userDetails: UserDetails | null;
   loading: boolean;
+  apiStatus: { isUp: boolean; lastChecked: Date | null };
+  checkApiConnection: () => Promise<boolean>;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -21,6 +23,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [apiStatus, setApiStatus] = useState<{ isUp: boolean; lastChecked: Date | null }>({
+    isUp: true,
+    lastChecked: null,
+  });
   const supabase = createClient();
 
   // Fetch user details from backend when authenticated
@@ -31,19 +37,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setLoading(true);
           const details = await getUserDetails();
           setUserDetails(details);
+          setApiStatus({ isUp: true, lastChecked: new Date() });
         } catch (error) {
-          console.error('Error fetching user details:', error);
+          console.error(
+            'Error fetching user details:',
+            error instanceof Error ? error.message : String(error)
+          );
           // Don't clear userDetails on error to maintain existing data if it's a temporary issue
 
-          // Handle authentication errors specifically
+          // Handle specific error types
           if (
             error instanceof Error &&
             (error.message.includes('Authentication failed') ||
               error.message.includes('Authentication required'))
           ) {
-            // If it's specifically an auth error, we might want to trigger a sign out
-            // or refresh the token, depending on your auth strategy
             console.warn('Authentication issue detected when fetching user details');
+            setApiStatus({ isUp: false, lastChecked: new Date() });
+          } else if (
+            error instanceof Error &&
+            (error.message.includes('Failed to fetch') ||
+              error.message.includes('Could not connect') ||
+              error.message.includes('Connection timed out') ||
+              error.message.includes('Failed to connect to the backend API'))
+          ) {
+            console.warn(
+              'Backend API connection issue. Please check if the backend server is running.'
+            );
+            setApiStatus({ isUp: false, lastChecked: new Date() });
           }
         } finally {
           setLoading(false);
@@ -98,9 +118,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error;
   };
 
+  // Check if API is available
+  const checkApiConnection = async (): Promise<boolean> => {
+    try {
+      const isUp = await checkApiStatus();
+      setApiStatus({ isUp, lastChecked: new Date() });
+      return isUp;
+    } catch (error) {
+      setApiStatus({ isUp: false, lastChecked: new Date() });
+      return false;
+    }
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, userDetails, loading, signIn, signUp, signOut, signInWithSocial }}
+      value={{
+        user,
+        userDetails,
+        loading,
+        apiStatus,
+        checkApiConnection,
+        signIn,
+        signUp,
+        signOut,
+        signInWithSocial,
+      }}
     >
       {children}
     </AuthContext.Provider>

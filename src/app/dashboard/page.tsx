@@ -8,13 +8,14 @@ import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { CopyIcon, CheckIcon } from '@radix-ui/react-icons';
+import { CopyIcon, CheckIcon, ReloadIcon } from '@radix-ui/react-icons';
 
 export default function DashboardPage() {
-  const { user, userDetails, loading } = useAuth();
+  const { user, userDetails, loading, apiStatus, checkApiConnection } = useAuth();
   const [jwtToken, setJwtToken] = useState<string>('');
   const [isCopied, setIsCopied] = useState(false);
   const [isTokenVisible, setIsTokenVisible] = useState(false);
+  const [checkingApi, setCheckingApi] = useState(false);
 
   const fetchToken = async () => {
     const supabase = createClient();
@@ -36,6 +37,17 @@ export default function DashboardPage() {
   const hideToken = () => {
     setIsTokenVisible(false);
     setJwtToken('');
+  };
+
+  const refreshApiStatus = async () => {
+    try {
+      setCheckingApi(true);
+      await checkApiConnection();
+    } catch (error) {
+      console.error('Error checking API status:', error);
+    } finally {
+      setCheckingApi(false);
+    }
   };
 
   if (loading) {
@@ -119,6 +131,34 @@ export default function DashboardPage() {
                   {user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : 'N/A'}
                 </span>
               </div>
+              <div className="flex justify-between items-center pt-2 border-t">
+                <span className="text-sm font-medium">API Status</span>
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`h-2 w-2 rounded-full ${apiStatus.isUp ? 'bg-green-500' : 'bg-red-500'}`}
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    {apiStatus.isUp ? 'Connected' : 'Disconnected'}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={refreshApiStatus}
+                    disabled={checkingApi}
+                    className="h-6 w-6"
+                  >
+                    <ReloadIcon className={`h-3 w-3 ${checkingApi ? 'animate-spin' : ''}`} />
+                  </Button>
+                </div>
+              </div>
+              {apiStatus.lastChecked && (
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium">Last API Check</span>
+                  <span className="text-sm text-muted-foreground">
+                    {apiStatus.lastChecked.toLocaleString()}
+                  </span>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
