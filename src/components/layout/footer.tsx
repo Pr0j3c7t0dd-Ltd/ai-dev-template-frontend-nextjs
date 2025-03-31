@@ -4,7 +4,7 @@ import { Terminal, Github, Twitter, Linkedin } from 'lucide-react';
 export function Footer() {
   return (
     <footer className="border-t bg-background/95">
-      <div className="container px-4 md:px-6 py-8 md:py-12">
+      <div className="mx-auto max-w-screen-2xl px-4 md:px-6 py-8 md:py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="flex flex-col space-y-4">
             <Link href="/" className="flex items-center gap-2">
