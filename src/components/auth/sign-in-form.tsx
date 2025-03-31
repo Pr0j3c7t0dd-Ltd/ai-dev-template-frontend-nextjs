@@ -1,21 +1,36 @@
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
-import { useAuth } from '@/lib/context/auth-context'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useAuth } from '@/lib/context/auth-context';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Link } from '@/components/ui/link';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-})
+});
 
 export function SignInForm() {
-  const { signIn } = useAuth()
-  const [error, setError] = useState('')
+  const { signIn } = useAuth();
+  const [error, setError] = useState('');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -23,15 +38,15 @@ export function SignInForm() {
       email: '',
       password: '',
     },
-  })
+  });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await signIn(values.email, values.password)
+      await signIn(values.email, values.password);
     } catch (error) {
-      setError('Invalid email or password')
+      setError('Invalid email or password');
     }
-  }
+  };
 
   return (
     <Card className="w-[350px]">
@@ -76,13 +91,13 @@ export function SignInForm() {
         </Form>
       </CardContent>
       <CardFooter className="flex justify-center">
-        <p className="text-sm text-gray-500">
-          Don't have an account?{' '}
-          <a href="/sign-up" className="text-blue-500 hover:underline">
+        <p className="text-sm text-muted-foreground">
+          Don&apos;t have an account?{' '}
+          <Link href="/sign-up" className="text-primary hover:underline">
             Sign up
-          </a>
+          </Link>
         </p>
       </CardFooter>
     </Card>
-  )
-} 
+  );
+}

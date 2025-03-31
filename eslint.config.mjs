@@ -14,6 +14,44 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  {
+    ignores: [
+      // Build outputs
+      ".next/**/*",
+      "out/**/*",
+      "node_modules/**/*",
+      "dist/**/*",
+      "build/**/*",
+      "coverage/**/*",
+      "public/**/*",
+      // Config files
+      "*.config.js",
+      "*.config.ts",
+      "next.config.*",
+      "jest.config.*",
+      "tailwind.config.*",
+      "postcss.config.*",
+      // Type definitions
+      "**/*.d.ts",
+      "**/*.js.map",
+      // Generated files
+      "**/*.generated.*",
+      "**/*.min.*",
+      "**/*.bundle.*",
+      "**/*.chunk.*",
+      "**/*.transformed.*", 
+      "**/*.compiled.*",
+      "**/*.turbopack.*",
+      "**/*.development.*",
+      "**/*.production.*",
+      // Turbopack specific
+      "**/node_modules_*",
+      "**/__turbopack__/**",
+      "**/_next/**",
+      // SWC
+      ".swc/**/*",
+    ]
+  },
   ...compat.config({
     extends: [
       'next/core-web-vitals',

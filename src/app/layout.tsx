@@ -1,21 +1,19 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { AuthProvider } from '@/lib/context/auth-context'
-import { NavAuth } from '@/components/auth/nav-auth'
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { AuthProvider } from '@/lib/context/auth-context';
+import { NavAuth } from '@/components/auth/nav-auth';
+import Link from 'next/link';
+import { Icons } from '@/components/icons';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "Next.js App with Supabase Auth",
-  description: "A Next.js application with Supabase authentication",
+  title: 'Next.js App with Supabase Auth',
+  description: 'A Next.js application with Supabase authentication',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} min-h-screen bg-background antialiased`}>
@@ -25,9 +23,10 @@ export default function RootLayout({
               <div className="container flex h-14 items-center">
                 <nav className="flex flex-1 items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <a href="/" className="text-lg font-semibold">
-                      Your App
-                    </a>
+                    <Link href="/" className="flex items-center gap-2">
+                      <Icons.logo className="h-6 w-6" />
+                      <span className="font-bold inline-block">AI Dev Template</span>
+                    </Link>
                   </div>
                   <NavAuth />
                 </nav>
