@@ -1,0 +1,159 @@
+---
+description: Rules for creating maintainable and secure API routes in Next.js applications
+globs: 
+alwaysApply: false
+---
+---
+name: Next.js API Routes Best Practices
+description: Rules for creating maintainable and secure API routes in Next.js applications
+rules:
+  # General API Route Structure
+  - name: API route handler signature
+    description: Ensure proper handler signature for API routes
+    matches: regex:pages/api/.*\.ts$
+    requires:
+      - regex:export default (async )?function handler\(req, res\) {
+
+  - name: Type NextApiRequest and NextApiResponse
+    description: Use proper typing for API route handlers
+    matches: regex:pages/api/.*\.ts$
+    requires:
+      - regex:import (type )?\{ NextApiRequest, NextApiResponse \} from ['"]next['"]
+      - regex:export default (async )?function handler\(req: NextApiRequest, res: NextApiResponse(\<.*\>)?\) {
+
+  - name: Handle all HTTP methods
+    description: Handle all relevant HTTP methods or return 405 for unsupported methods
+    matches: regex:pages/api/.*\.ts$
+    requires:
+      - regex:if \(req\.method === ['"]GET['"]\) {
+      - regex:(else )?if \(req\.method === ['"]POST['"]\) {
+      - regex:else {.*res\.status\(405\)\.json\(\{.*\}\)}
+
+  # Error Handling
+  - name: Proper error handling
+    description: Implement proper error handling in API routes
+    matches: regex:pages/api/.*\.ts$
+    requires:
+      - regex:try {
+      - regex:catch \(error\) {
+      - regex:res\.status\(5\d\d\)\.json\(\{
+
+  - name: Validate input
+    description: Validate input data in API routes
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:const \{ error \} = validate
+      - regex:if \(!.*\) {.*res\.status\(400\)\.json\(\{.*\}\)}
+
+  # API Response Structure
+  - name: Consistent response structure
+    description: Use consistent response structure across API routes
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:res\.status\(\d\d\d\)\.json\(\{ (success|data|error): 
+    prefers:
+      - pattern: res.json({
+        replace: res.status(200).json({
+      - pattern: res.end()
+        replace: res.status(204).end()
+
+  # Authentication
+  - name: Authentication in API routes
+    description: Implement authentication checks in protected API routes
+    matches: regex:pages/api/(?!auth/).*\.ts$
+    suggests:
+      - regex:const session = await getSession\(\{ req \}\)
+      - regex:if \(!session\) {.*res\.status\(401\)\.json\(\{.*\}\)}
+
+  # Rate Limiting
+  - name: Implement rate limiting
+    description: Implement rate limiting for API routes
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:import rateLimit from
+      - regex:const limiter = rateLimit\({
+
+  # API Route Organization
+  - name: Organize API logic
+    description: Separate API logic from the handler
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:import \{ .* \} from ['"]@/lib/api/
+      - regex:import \{ .* \} from ['"]@/utils/api/
+
+  # Database Operations
+  - name: Proper database handling
+    description: Handle database operations properly in API routes
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:import \{ .* \} from ['"]@/lib/db
+      - regex:await .*\.findOne\(
+      - regex:await .*\.insertOne\(
+      - regex:await .*\.updateOne\(
+      - regex:await .*\.deleteOne\(
+
+  # Request Validation
+  - name: Use zod or joi for validation
+    description: Use zod or joi for input validation
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:import \{ z \} from ['"]zod['"]
+      - regex:import Joi from ['"]joi['"]
+      - regex:const schema = z\.object\({
+      - regex:const schema = Joi\.object\({
+
+  # Middleware Usage
+  - name: Use middleware patterns
+    description: Use middleware patterns for common operations
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:import \{ .* \} from ['"]@/middleware/
+      - regex:export default .* withMiddleware\(handler\)
+
+  # API Documentation
+  - name: Document API routes
+    description: Include JSDoc for API routes
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:/\*\*[\s\S]*\*/
+      - regex:@param \{NextApiRequest\} req
+      - regex:@param \{NextApiResponse\} res
+      - regex:@returns \{Promise<void>\}
+
+  # CORS Handling
+  - name: Handle CORS properly
+    description: Handle CORS headers properly in API routes
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:res\.setHeader\(['"]Access-Control-Allow-Origin['"], 
+      - regex:res\.setHeader\(['"]Access-Control-Allow-Methods['"], 
+      - regex:if \(req\.method === ['"]OPTIONS['"]\) {
+
+  # Environment Variables
+  - name: Use environment variables
+    description: Use environment variables for sensitive information
+    matches: regex:pages/api/.*\.ts$
+    prefers:
+      - pattern: "apiKey: \".*\""
+        replace: "apiKey: process.env.API_KEY"
+      - pattern: "password: \".*\""
+        replace: "password: process.env.DB_PASSWORD"
+    suggests:
+      - regex:process\.env\.
+
+  # Pagination
+  - name: Implement pagination
+    description: Implement pagination for API routes that return lists
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:const page = (parseInt\()?req\.query\.page
+      - regex:const limit = (parseInt\()?req\.query\.limit
+      - regex:const skip = \(page - 1\) \* limit
+
+  # Security Headers
+  - name: Set security headers
+    description: Set security headers in API responses
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:res\.setHeader\(['"]Content-Security-Policy['"], 
+      - regex:res\.setHeader\(['"]X-Content-Type-Options['"], ['"]nosniff['"]\)

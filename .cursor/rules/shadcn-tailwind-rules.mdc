@@ -1,0 +1,154 @@
+---
+description: Rules to ensure consistent use of shadcn/ui components and Tailwind CSS in a Next.js application
+globs: 
+alwaysApply: false
+---
+---
+name: shadcn/ui and Tailwind CSS Best Practices
+description: Rules to ensure consistent use of shadcn/ui components and Tailwind CSS in a Next.js application
+rules:
+  # General Tailwind Rules
+  - name: Use Tailwind classes for styling
+    description: Use Tailwind utility classes instead of custom CSS
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:className="[^"]*"
+    prefers:
+      - pattern: style={{.*}}
+        replace: className="..."
+      - pattern: <div style={{.*}}>
+        replace: <div className="...">
+
+  - name: Avoid inline styles
+    description: Avoid using inline styles, use Tailwind classes instead
+    matches: regex:.*\.tsx?$
+    avoid:
+      - regex:style={{.*}}
+
+  - name: Use Tailwind responsive classes
+    description: Use Tailwind responsive classes for responsive design
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:className="[^"]*(sm:|md:|lg:|xl:|2xl:)[^"]*"
+
+  - name: Use Tailwind color scheme
+    description: Stick to the Tailwind color palette
+    matches: regex:.*\.tsx?$
+    avoid:
+      - regex:color: ['"]#[0-9a-fA-F]{3,6}['"]
+      - regex:backgroundColor: ['"]#[0-9a-fA-F]{3,6}['"]
+    prefers:
+      - pattern: text-[#......]
+        replace: text-blue-500
+      - pattern: bg-[#......]
+        replace: bg-gray-100
+
+  # shadcn/ui Rules
+  - name: Import shadcn/ui components correctly
+    description: Use the correct import paths for shadcn/ui components
+    matches: regex:.*\.tsx?$
+    prefers:
+      - pattern: import { Button } from "."
+        replace: import { Button } from "@/components/ui/button"
+      - pattern: import { Card } from "."
+        replace: import { Card } from "@/components/ui/card"
+
+  - name: Use shadcn/ui Button component
+    description: Use shadcn/ui Button instead of HTML button
+    matches: regex:.*\.tsx?$
+    prefers:
+      - pattern: <button
+        replace: <Button
+      - pattern: </button>
+        replace: </Button>
+
+  - name: Use shadcn/ui form components
+    description: Use shadcn/ui form components for forms
+    matches: regex:.*\.tsx?$
+    prefers:
+      - pattern: <input
+        replace: <Input
+      - pattern: </input>
+        replace: </Input>
+      - pattern: <select
+        replace: <Select
+      - pattern: </select>
+        replace: </Select>
+
+  - name: Use shadcn/ui Card component
+    description: Use shadcn/ui Card for card UI patterns
+    matches: regex:.*\.tsx?$
+    prefers:
+      - pattern: <div className="[^"]*shadow[^"]*rounded[^"]*">
+        replace: <Card>
+      - pattern: </div>
+        replace: </Card>
+
+  - name: Use proper variant props
+    description: Use proper variant props for shadcn/ui components
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:<Button variant="[^"]*"
+      - regex:<Input variant="[^"]*"
+
+  # Folder Structure for shadcn/ui
+  - name: Maintain shadcn/ui component structure
+    description: Keep shadcn/ui components in the correct directory structure
+    matches: regex:components/ui/.*\.tsx$
+    requires:
+      - regex:^import \* as React from ["']react["'];$
+      - regex:^import \{.*\} from ["']@.*["'];$
+
+  # Tailwind Configuration Rules
+  - name: Use proper Tailwind config
+    description: Ensure Tailwind is properly configured for shadcn/ui
+    matches: regex:tailwind\.config\.(js|ts)$
+    requires:
+      - regex:plugins: \[require\(["']tailwindcss-animate["']\)\]
+      - regex:darkMode: \[["']class["']\]
+
+  # Theme Rules
+  - name: Use theme variables
+    description: Use CSS variables for theming
+    matches: regex:.*\.css$
+    suggests:
+      - regex:--background
+      - regex:--foreground
+      - regex:--primary
+      - regex:--secondary
+
+  - name: Import proper CSS
+    description: Import the correct CSS files
+    matches: regex:.*\.(ts|tsx)$
+    suggests:
+      - regex:import ["']@/styles/globals\.css["']
+
+  # Form Handling with shadcn/ui
+  - name: Use React Hook Form with shadcn/ui
+    description: Use React Hook Form for form handling with shadcn/ui components
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:import \{ useForm \} from ["']react-hook-form["']
+      - regex:import \{ zodResolver \} from ["']@hookform/resolvers/zod["']
+
+  # Layout Rules
+  - name: Use Tailwind's flex and grid utilities
+    description: Use Tailwind's flex and grid utilities for layout
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:className="[^"]*flex[^"]*"
+      - regex:className="[^"]*grid[^"]*"
+    prefers:
+      - pattern: display: "flex"
+        replace: className="flex"
+      - pattern: display: "grid"
+        replace: className="grid"
+
+  # Accessibility Rules
+  - name: Use shadcn/ui accessibility features
+    description: Utilize shadcn/ui's built-in accessibility features
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:aria-label
+      - regex:aria-labelledby
+      - regex:role=["'][^"']*["']

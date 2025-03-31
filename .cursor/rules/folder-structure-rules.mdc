@@ -1,0 +1,187 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+name: Next.js Folder Structure
+description: Rules to enforce a clean and scalable folder structure for Next.js applications
+rules:
+  # Root-level folder structure
+  - name: Core directories structure
+    description: Enforce the existence of core directories in the project
+    matches: regex:.*/
+    excludes:
+      - regex:node_modules/.*
+      - regex:.next/.*
+    requires:
+      - folder:pages
+      - folder:public
+      - folder:styles
+      - folder:components
+      - folder:lib
+      - folder:hooks
+      - folder:context
+      - folder:types
+      - folder:utils
+
+  # Pages directory structure
+  - name: Pages structure
+    description: Organize pages with proper folder structure
+    matches: regex:pages/
+    requires:
+      - folder:api
+      - file:_app.tsx
+      - file:_document.tsx
+      - file:index.tsx
+
+  - name: API routes organization
+    description: Organize API routes in a structured way
+    matches: regex:pages/api/
+    suggests:
+      - folder:auth
+      - folder:users
+      - folder:posts
+      - file:index.ts
+
+  # Components directory structure
+  - name: Components organization
+    description: Organize components in a structured way
+    matches: regex:components/
+    requires:
+      - folder:ui
+      - folder:layout
+      - folder:common
+      - folder:forms
+    suggests:
+      - folder:sections
+      - folder:navigation
+      - folder:cards
+      - folder:modals
+
+  - name: UI components
+    description: Organize UI components for shadcn
+    matches: regex:components/ui/
+    suggests:
+      - file:button.tsx
+      - file:input.tsx
+      - file:card.tsx
+      - file:dialog.tsx
+      - file:select.tsx
+      - file:form.tsx
+
+  - name: Layout components
+    description: Organize layout components
+    matches: regex:components/layout/
+    suggests:
+      - file:header.tsx
+      - file:footer.tsx
+      - file:sidebar.tsx
+      - file:layout.tsx
+
+  # Module structure
+  - name: Feature-based structure
+    description: Encourage feature-based organization within larger sections
+    matches: regex:(?:pages|components)/(?!_app|_document|api|ui|layout|common|forms).*/
+    suggests:
+      - file:index.tsx
+      - file:types.ts
+      - file:hooks.ts
+      - file:utils.ts
+
+  # Hooks directory structure
+  - name: Hooks organization
+    description: Organize custom hooks
+    matches: regex:hooks/
+    suggests:
+      - file:useAuth.ts
+      - file:useFetch.ts
+      - file:useForm.ts
+      - file:index.ts
+
+  # Context directory structure
+  - name: Context organization
+    description: Organize context providers
+    matches: regex:context/
+    suggests:
+      - file:AuthContext.tsx
+      - file:ThemeContext.tsx
+      - file:index.ts
+
+  # Types directory structure
+  - name: Types organization
+    description: Organize TypeScript types
+    matches: regex:types/
+    suggests:
+      - file:index.ts
+      - file:api.ts
+      - file:auth.ts
+      - file:user.ts
+
+  # Utils directory structure
+  - name: Utils organization
+    description: Organize utility functions
+    matches: regex:utils/
+    suggests:
+      - file:api.ts
+      - file:format.ts
+      - file:validation.ts
+      - file:index.ts
+
+  # Lib directory structure
+  - name: Lib organization
+    description: Organize external service integrations
+    matches: regex:lib/
+    suggests:
+      - file:db.ts
+      - file:auth.ts
+      - file:api.ts
+      - file:index.ts
+
+  # Styles directory structure
+  - name: Styles organization
+    description: Organize styles
+    matches: regex:styles/
+    requires:
+      - file:globals.css
+    suggests:
+      - file:variables.css
+      - file:animations.css
+
+  # Public directory structure
+  - name: Public assets organization
+    description: Organize public assets
+    matches: regex:public/
+    suggests:
+      - folder:images
+      - folder:icons
+      - folder:fonts
+      - file:favicon.ico
+      - file:robots.txt
+
+  # File naming conventions
+  - name: Component file naming
+    description: Enforce consistent file naming for components
+    matches: regex:components/.*\.tsx$
+    requires:
+      - regex:^[A-Z][a-zA-Z0-9]*\.tsx$
+
+  - name: Utility file naming
+    description: Enforce consistent file naming for utility files
+    matches: regex:(utils|lib|hooks)/.*\.ts$
+    requires:
+      - regex:^[a-z][a-zA-Z0-9]*\.ts$
+
+  - name: Page file naming
+    description: Enforce consistent file naming for pages
+    matches: regex:pages/(?!_app|_document|api).*\.tsx$
+    requires:
+      - regex:^(index|\[[a-z]+\]|[a-z][a-zA-Z0-9]*)\.tsx$
+
+  # Index exports
+  - name: Use index exports
+    description: Use index files to export components and functions
+    matches: regex:(?:components|hooks|utils|lib|context|types)/[^/]*/index\.tsx?$
+    suggests:
+      - regex:export \* from ['"]\./
+      - regex:export \{ default as [A-Z][a-zA-Z]* \} from ['"]\./

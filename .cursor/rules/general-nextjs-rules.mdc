@@ -1,0 +1,141 @@
+---
+description: Rules for maintaining a clean and consistent Next.js project structure and code quality
+globs: 
+alwaysApply: false
+---
+---
+name: Next.js General Best Practices
+description: Rules for maintaining a clean and consistent Next.js project structure and code quality
+rules:
+  # Project Structure Rules
+  - name: Follow Next.js folder convention
+    description: Use the standard Next.js folder structure
+    matches: regex:.*/
+    excludes:
+      - regex:node_modules/.*
+      - regex:.next/.*
+    requires:
+      # Core directories
+      - folder:app
+      - folder:public
+      - folder:components
+      - folder:lib
+      - folder:types
+      
+  - name: Pages should be in pages directory
+    description: All page components should be in the pages directory
+    matches: regex:pages/.*\.tsx?$
+    requires:
+      - regex:^import .* from ['"].*['"];?$
+      - regex:^export default function .*\(.*\).*{$
+
+  - name: API routes should be in api directory
+    description: All API route handlers should be in the pages/api directory
+    matches: regex:pages/api/.*\.tsx?$
+    requires:
+      - regex:export default (async )?function handler\(.*\).*{$
+
+  - name: Components should be in components directory
+    description: All reusable UI components should be in the components directory
+    matches: regex:components/.*\.tsx?$
+    requires:
+      - regex:^import .* from ['"].*['"];?$
+      - regex:^(export default |export const ).*
+
+  # Code Quality Rules
+  - name: Use TypeScript exclusively
+    description: All source files should be TypeScript
+    matches: 
+      - regex:.*\.(ts|tsx)$
+    requires:
+      - regex:^(import|export|const|function|interface|type|enum).*
+
+  - name: Props should be typed
+    description: All component props should be typed with interfaces or types
+    matches: regex:components/.*\.tsx$
+    requires:
+      - regex:(interface|type) .*Props
+
+  - name: API responses should be typed
+    description: API responses should have proper type definitions
+    matches: regex:pages/api/.*\.ts$
+    requires:
+      - regex:(interface|type) .*Response
+
+  - name: Use absolute imports
+    description: Use absolute imports instead of relative paths for cleaner imports
+    matches: regex:.*\.(ts|tsx)$
+    prefers:
+      - pattern: import .* from "../../components/.*"
+        replace: import .* from "@/components/.*"
+      - pattern: import .* from "../../lib/.*"
+        replace: import .* from "@/lib/.*"
+
+  # Data Fetching Rules
+  - name: API calls should use SWR or React Query
+    description: Use SWR or React Query for data fetching
+    matches: regex:.*\.(ts|tsx)$
+    prefers:
+      - pattern: fetch\(
+        replace: useSWR\(
+      - pattern: fetch\(
+        replace: useQuery\(
+
+  - name: Use getServerSideProps for server-rendered pages
+    description: Server-rendered pages should use getServerSideProps
+    matches: regex:pages/(?!api/).*\.tsx?$
+    suggests:
+      - regex:export (const|async function) getServerSideProps
+
+  - name: Use getStaticProps for static pages
+    description: Static pages should use getStaticProps
+    matches: regex:pages/(?!api/).*\.tsx?$
+    suggests:
+      - regex:export (const|async function) getStaticProps
+
+  # Performance Rules
+  - name: Use Next.js Image component
+    description: Use Next.js Image component instead of HTML img
+    matches: regex:.*\.tsx?$
+    prefers:
+      - pattern: <img
+        replace: <Image
+      - pattern: src="/"
+        replace: src="/"
+
+  - name: Use Next.js Link component
+    description: Use Next.js Link component instead of a tags for internal navigation
+    matches: regex:.*\.tsx?$
+    prefers:
+      - pattern: <a href="/"
+        replace: <Link href="/"
+
+  # Security Rules
+  - name: Sanitize API inputs
+    description: Always validate and sanitize user inputs in API routes
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:(validate|sanitize|schema)
+
+  - name: Use environment variables
+    description: Use environment variables for sensitive information
+    matches: regex:.*\.(ts|tsx)$
+    prefers:
+      - pattern: "apiKey: \".*\""
+        replace: "apiKey: process.env.API_KEY"
+      - pattern: "password: \".*\""
+        replace: "password: process.env.PASSWORD"
+
+  # Error Handling Rules
+  - name: Implement error boundaries
+    description: Use error boundaries for component error handling
+    matches: regex:pages/.*\.tsx?$
+    suggests:
+      - regex:ErrorBoundary
+      - regex:try {.*} catch \(error\) {.*}
+
+  - name: Handle API errors
+    description: Properly handle and respond to errors in API routes
+    matches: regex:pages/api/.*\.ts$
+    requires:
+      - regex:try {.*} catch \(error\) {.*res\.status\(5\d\d\)\.json\({.*}\)}

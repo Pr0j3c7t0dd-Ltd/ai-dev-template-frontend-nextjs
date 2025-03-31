@@ -1,0 +1,177 @@
+---
+description: Rules to optimize performance and SEO in Next.js applications
+globs: 
+alwaysApply: false
+---
+---
+name: Next.js Performance and SEO Best Practices
+description: Rules to optimize performance and SEO in Next.js applications
+rules:
+  # Image Optimization
+  - name: Use Next.js Image component
+    description: Use Next.js Image component for optimized images
+    matches: regex:.*\.tsx?$
+    prefers:
+      - pattern: <img
+        replace: <Image
+    requires:
+      - regex:import Image from ['"]next/image['"]
+
+  - name: Specify image dimensions
+    description: Always specify width and height for images
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:<Image[^>]*width=\{.*\}[^>]*height=\{.*\}
+
+  - name: Use image priority for LCP
+    description: Use priority prop for important above-the-fold images
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:<Image[^>]*priority[^>]*
+
+  # Link and Navigation
+  - name: Use Next.js Link component
+    description: Use Next.js Link component for client-side navigation
+    matches: regex:.*\.tsx?$
+    prefers:
+      - pattern: <a href=
+        replace: <Link href=
+    requires:
+      - regex:import Link from ['"]next/link['"]
+
+  - name: Prefetch important links
+    description: Use prefetch for important links
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:<Link[^>]*prefetch[^>]*
+
+  # Data Fetching
+  - name: Use appropriate data fetching methods
+    description: Use appropriate Next.js data fetching methods
+    matches: regex:pages/.*\.tsx?$
+    suggests:
+      - regex:export (async )?function getStaticProps
+      - regex:export (async )?function getServerSideProps
+      - regex:export (async )?function getStaticPaths
+
+  - name: Implement ISR where appropriate
+    description: Use Incremental Static Regeneration for dynamic content
+    matches: regex:pages/.*\.tsx?$
+    suggests:
+      - regex:revalidate: \d+
+
+  # Meta Tags and SEO
+  - name: Use Next.js Head component
+    description: Use Next.js Head component for meta tags
+    matches: regex:pages/.*\.tsx?$
+    requires:
+      - regex:import Head from ['"]next/head['"]
+      - regex:<Head>[\s\S]*<\/Head>
+
+  - name: Include essential meta tags
+    description: Include essential SEO meta tags
+    matches: regex:pages/.*\.tsx?$
+    suggests:
+      - regex:<title>
+      - regex:<meta name=["']description["']
+      - regex:<meta property=["']og:
+      - regex:<meta name=["']viewport["']
+
+  - name: Use dynamic meta tags
+    description: Use dynamic meta tags based on page content
+    matches: regex:pages/.*\.tsx?$
+    suggests:
+      - regex:<title>{.*}</title>
+      - regex:<meta name=["']description["'] content={.*} />
+
+  # Font Optimization
+  - name: Use Next.js Font optimization
+    description: Use Next.js Font optimization for web fonts
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:import \{ .*? \} from ['"]next/font/(google|local)['"]
+
+  - name: Apply font display swap
+    description: Use font-display: swap for better performance
+    matches: regex:styles/.*\.css$
+    suggests:
+      - regex:font-display: swap
+
+  # Script Optimization
+  - name: Use Next.js Script component
+    description: Use Next.js Script component for optimized script loading
+    matches: regex:.*\.tsx?$
+    prefers:
+      - pattern: <script
+        replace: <Script
+    requires:
+      - regex:import Script from ['"]next/script['"]
+
+  - name: Defer non-critical scripts
+    description: Defer non-critical scripts
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:<Script[^>]*strategy=["'](mdc:lazyOnload|afterInteractive)["'][^>]*
+
+  # Code Splitting and Bundling
+  - name: Use dynamic imports for code splitting
+    description: Use dynamic imports for heavy components
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:const \w+ = dynamic\(\(\) => import\(
+
+  - name: Lazy load below-the-fold components
+    description: Lazy load components that are below the fold
+    matches: regex:.*\.tsx?$
+    requires:
+      - regex:import dynamic from ['"]next/dynamic['"]
+    suggests:
+      - regex:const \w+ = dynamic\(\(\) => import\(['"]@/components/.*['"]\)\)
+
+  # Caching Strategies
+  - name: Set proper cache control headers
+    description: Set proper cache control headers in API routes
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:res\.setHeader\(['"]Cache-Control['"], ['"].*['"]\)
+
+  - name: Use SWR with proper caching strategy
+    description: Configure SWR for optimal caching
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:useSWR\(.*,.*,\s*\{.*revalidateOnFocus
+      - regex:SWRConfig value=\{\{
+
+  # Core Web Vitals Optimization
+  - name: Optimize Largest Contentful Paint (LCP)
+    description: Optimize for LCP by prioritizing important content
+    matches: regex:pages/.*\.tsx?$
+    suggests:
+      - regex:<Image[^>]*priority[^>]*
+      - regex:fetchPriority=["']high["']
+
+  - name: Reduce Cumulative Layout Shift (CLS)
+    description: Reduce CLS by specifying dimensions
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:<Image[^>]*width=\{.*\}[^>]*height=\{.*\}
+      - regex:className=["'].*min-h-\[\d+px\].*["']
+
+  - name: Optimize First Input Delay (FID)
+    description: Optimize for FID by reducing JavaScript execution time
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:useCallback\(
+      - regex:useMemo\(
+      - regex:<React\.Fragment>
+
+  # Responsive Design
+  - name: Use responsive design for all views
+    description: Implement responsive design using Tailwind
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:className=["'].*sm:.*md:.*lg:.*["']
+
+  - name: Implement mobile-first approach
+    description: Use mobile-first approach in styles
+    matches: regex:

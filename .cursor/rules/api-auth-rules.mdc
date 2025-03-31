@@ -1,0 +1,93 @@
+---
+description: Rules to enforce consistent and secure API authentication patterns using JWT tokens
+globs: 
+alwaysApply: false
+---
+---
+name: API Authentication Rules
+description: Rules to enforce consistent and secure API authentication patterns using JWT tokens
+rules:
+  - name: API client structure
+    description: Enforce a consistent API client structure that uses JWT tokens
+    matches: regex:lib/api/.*\.ts$
+    requires:
+      - regex:import\s+.*\s+from\s+['"].*axios.*['"]
+      - regex:process\.env\.NEXT_PUBLIC_API_URL
+
+  - name: API authentication
+    description: Ensure JWT tokens are used for authenticated API calls
+    matches: regex:lib/api/.*\.ts$
+    requires:
+      - regex:Authorization.*Bearer.*token
+      - regex:const\s+.*\s+=\s+axios\.create\(\{.*\}\)
+
+  - name: Environment variables
+    description: Ensure required API environment variables are defined
+    matches: regex:\.env.*
+    requires:
+      - regex:NEXT_PUBLIC_API_URL=.*
+    suggests:
+      - regex:NEXT_PUBLIC_API_TIMEOUT=.*
+
+  - name: API client usage
+    description: Enforce consistent use of the API client
+    matches: regex:(?:components|pages|app)/.*\.(tsx|ts)$
+    suggests:
+      - regex:import\s+.*\s+from\s+['"]@/lib/api.*['"]
+      - regex:useAuth.*hook
+
+  - name: Auth utilities
+    description: Enforce consistent authentication utilities
+    matches: regex:lib/auth/.*\.ts$
+    requires:
+      - regex:getToken
+      - regex:setToken
+      - regex:removeToken
+    suggests:
+      - regex:isAuthenticated
+      - regex:refreshToken
+
+  - name: API error handling
+    description: Ensure proper error handling for API requests
+    matches: regex:lib/api/.*\.ts$
+    requires:
+      - regex:try\s*\{.*\}\s*catch\s*\(.*\)\s*\{
+      - regex:error.*response
+
+  - name: Authentication hooks
+    description: Enforce consistent authentication hooks
+    matches: regex:hooks/.*Auth.*\.ts$
+    requires:
+      - regex:useAuth
+    suggests:
+      - regex:isLoading
+      - regex:isAuthenticated
+      - regex:user
+      - regex:login
+      - regex:logout
+      - regex:register
+
+  - name: Protected routes
+    description: Ensure protected routes check for authentication
+    matches: regex:(?:pages|app)/dashboard/.*\.(tsx|ts)$
+    requires:
+      - regex:useAuth
+      - regex:isAuthenticated
+      - regex:redirect
+
+  - name: API token refresh
+    description: Encourage token refresh implementation
+    matches: regex:lib/api/.*\.ts$
+    suggests:
+      - regex:refreshToken
+      - regex:tokenExpired
+      - regex:interceptors
+
+  - name: Secure storage
+    description: Enforce secure token storage
+    matches: regex:lib/auth/.*\.ts$
+    suggests:
+      - regex:localStorage
+      - regex:sessionStorage
+      - regex:httpOnly
+      - regex:cookie 
