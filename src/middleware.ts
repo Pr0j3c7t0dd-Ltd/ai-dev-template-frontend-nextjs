@@ -66,9 +66,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // If user is not signed in and the current path is not /sign-in or /sign-up,
+  // Define public routes that don't require authentication
+  const publicRoutes = ['/', '/sign-in', '/sign-up', '/sign-out'];
+  const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname);
+
+  // If user is not signed in and the current path is not a public route,
   // redirect to /sign-in
-  if (!session && !['/sign-in', '/sign-up'].includes(request.nextUrl.pathname)) {
+  if (!session && !isPublicRoute) {
     return NextResponse.redirect(new URL('/sign-in', request.url));
   }
 
