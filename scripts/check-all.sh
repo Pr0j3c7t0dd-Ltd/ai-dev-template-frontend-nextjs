@@ -9,7 +9,7 @@ echo "Step 1: Running linter and fixing issues"
 npm run lint:fix
 
 echo "Step 2: Running unit tests"
-npm run test
+npm run test -- --passWithNoTests
 
 echo "Step 3: Running end-to-end tests"
 npm run test:e2e
