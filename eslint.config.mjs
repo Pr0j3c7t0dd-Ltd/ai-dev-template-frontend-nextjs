@@ -50,6 +50,9 @@ const eslintConfig = [
       "**/_next/**",
       // SWC
       ".swc/**/*",
+      // Playwright
+      "playwright-report/**/*",
+      "test-results/**/*",
     ]
   },
   ...compat.config({

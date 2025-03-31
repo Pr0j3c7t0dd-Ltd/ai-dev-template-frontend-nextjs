@@ -1,0 +1,24 @@
+{
+  "extends": ["next/core-web-vitals"],
+  "ignorePatterns": [
+    ".next/**/*",
+    "out/**/*",
+    "node_modules/**/*",
+    "dist/**/*",
+    "build/**/*",
+    "coverage/**/*",
+    "public/**/*",
+    "*.config.js",
+    "*.config.ts",
+    "**/*.js.map",
+    "**/*.d.ts",
+    "**/*.turbopack.*",
+    "**/node_modules_*",
+    "**/*.chunk.*",
+    "**/*.bundle.*",
+    "**/__turbopack__/**",
+    "**/_next/**",
+    "playwright-report/**/*",
+    "test-results/**/*"
+  ]
+}

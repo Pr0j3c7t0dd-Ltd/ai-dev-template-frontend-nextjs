@@ -4,7 +4,7 @@ import './globals.css';
 import { AuthProvider } from '@/lib/context/auth-context';
 import { NavAuth } from '@/components/auth/nav-auth';
 import Link from 'next/link';
-import { Icons } from '@/components/icons';
+import { Terminal } from 'lucide-react';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -24,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <nav className="flex flex-1 items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Link href="/" className="flex items-center gap-2">
-                      <Icons.logo className="h-6 w-6" />
+                      <Terminal className="h-6 w-6" />
                       <span className="font-bold inline-block">AI Dev Template</span>
                     </Link>
                   </div>
