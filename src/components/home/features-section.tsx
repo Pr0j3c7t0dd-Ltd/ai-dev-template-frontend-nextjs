@@ -5,7 +5,7 @@ export function FeaturesSection() {
   return (
     <section id="features" className="py-24 bg-muted/50">
       <div className="container px-4 md:px-6">
-        <div className="flex flex-col items-center justify-center space-y-4 text-center">
+        <div className="text-center space-y-4">
           <div className="space-y-2">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
               Powerful Features
@@ -15,10 +15,12 @@ export function FeaturesSection() {
             </p>
           </div>
         </div>
-        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3 md:gap-8 mt-12">
-          <Card className="flex flex-col items-center text-center">
-            <CardHeader>
-              <Zap className="h-10 w-10 mb-2 text-primary" />
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8 mt-12">
+          <Card>
+            <CardHeader className="text-center">
+              <div className="flex justify-center mb-2">
+                <Zap className="h-10 w-10 text-primary" />
+              </div>
               <CardTitle>AI-Powered Development</CardTitle>
               <CardDescription>
                 Leverage AI to accelerate your coding workflow with intelligent suggestions and
@@ -26,18 +28,22 @@ export function FeaturesSection() {
               </CardDescription>
             </CardHeader>
           </Card>
-          <Card className="flex flex-col items-center text-center">
-            <CardHeader>
-              <Shield className="h-10 w-10 mb-2 text-primary" />
+          <Card>
+            <CardHeader className="text-center">
+              <div className="flex justify-center mb-2">
+                <Shield className="h-10 w-10 text-primary" />
+              </div>
               <CardTitle>Secure Authentication</CardTitle>
               <CardDescription>
                 Industry-standard auth with Supabase for user management and secure access control.
               </CardDescription>
             </CardHeader>
           </Card>
-          <Card className="flex flex-col items-center text-center">
-            <CardHeader>
-              <BarChart className="h-10 w-10 mb-2 text-primary" />
+          <Card>
+            <CardHeader className="text-center">
+              <div className="flex justify-center mb-2">
+                <BarChart className="h-10 w-10 text-primary" />
+              </div>
               <CardTitle>Performance Analytics</CardTitle>
               <CardDescription>
                 Monitor your application metrics and optimize for better user experiences.
