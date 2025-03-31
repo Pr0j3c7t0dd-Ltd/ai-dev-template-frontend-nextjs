@@ -1,0 +1,76 @@
+---
+description: Rules to enforce consistent logging practices across the application using Winston
+globs: 
+alwaysApply: false
+---
+---
+name: Logging Standards
+description: Rules to enforce consistent logging practices across the application using Winston
+rules:
+  - name: Logger Import
+    description: Enforce consistent logger import
+    matches: regex:.*\.(ts|tsx)$
+    suggests:
+      - regex:import logger from '@/lib/logger';
+
+  - name: Log Levels Usage
+    description: Define when to use different log levels
+    matches: regex:.*\.(ts|tsx)$
+    suggests:
+      - comment: Use error for application errors and failures
+        regex:logger\.error\(.*\)
+      - comment: Use warn for deprecation notices and non-critical issues
+        regex:logger\.warn\(.*\)
+      - comment: Use info for general operational messages
+        regex:logger\.info\(.*\)
+      - comment: Use http for HTTP request logging
+        regex:logger\.http\(.*\)
+      - comment: Use debug for detailed debugging information
+        regex:logger\.debug\(.*\)
+
+  - name: API Route Logging
+    description: Enforce logging in API routes
+    matches: regex:src/app/api/.*route\.(ts|js)$
+    requires:
+      - regex:logger\.http\(.*request.*\)
+      - regex:logger\.error\(.*error.*\)
+
+  - name: Error Boundary Logging
+    description: Enforce error logging in error boundaries
+    matches: regex:.*ErrorBoundary.*\.(ts|tsx)$
+    requires:
+      - regex:logger\.error\(.*error.*\)
+
+  - name: Environment Variables
+    description: Define required environment variables for logging
+    matches: regex:\.env.*
+    suggests:
+      - comment: Log level configuration
+        regex:NEXT_PUBLIC_LOG_LEVEL=
+      - comment: File logging toggle
+        regex:NEXT_PUBLIC_LOG_TO_FILE=
+
+  - name: Log Format
+    description: Enforce consistent log message format
+    matches: regex:.*\.(ts|tsx)$
+    suggests:
+      - comment: Include context in log messages
+        regex:logger\.[a-z]+\(`\[.*\].*`.*\)
+      - comment: Include error stack in error logs
+        regex:logger\.error\(.*error\.stack.*\)
+
+  - name: Performance Logging
+    description: Guidelines for performance-related logging
+    matches: regex:.*\.(ts|tsx)$
+    suggests:
+      - comment: Log slow operations
+        regex:logger\.warn\(`.*took longer than.*\)
+      - comment: Log memory usage for heavy operations
+        regex:logger\.info\(`.*memory usage.*\)
+
+  - name: Security Logging
+    description: Guidelines for security-related logging
+    matches: regex:.*\.(ts|tsx)$
+    requires:
+      - comment: Never log sensitive information
+        regex:(?!.*password.*|.*token.*|.*secret.*) 

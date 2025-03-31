@@ -1,0 +1,106 @@
+---
+description: Rules to enforce consistent testing practices using Jest and Playwright
+globs: 
+alwaysApply: false
+---
+name: Testing Standards
+description: Rules to enforce consistent testing practices using Jest and Playwright
+rules:
+  - name: Jest Test File Structure
+    description: Enforce consistent test file organization
+    matches: regex:.*\.test\.(ts|tsx)$
+    requires:
+      - regex:describe\(.*,.*=>\s*{
+      - regex:it\(.*,.*=>\s*{
+      - regex:expect\(.*\)
+    suggests:
+      - comment: Group related tests
+        regex:describe\(.*{
+      - comment: Use clear test descriptions
+        regex:it\('should.*',
+      - comment: Include setup and teardown
+        regex:beforeEach\(
+      - comment: Clean up after tests
+        regex:afterEach\(
+
+  - name: Playwright E2E Tests
+    description: Standards for E2E testing with Playwright
+    matches: regex:e2e/.*\.spec\.(ts|tsx)$
+    requires:
+      - regex:test\(.*,.*async.*\(\{.*page.*\}\)
+      - regex:await.*expect
+    suggests:
+      - comment: Use page fixtures
+        regex:test\.beforeEach\(async.*\(\{.*page.*\}\)
+      - comment: Include accessibility tests
+        regex:await.*checkA11y\(
+      - comment: Test responsive layouts
+        regex:await.*page\.setViewportSize
+      - comment: Test error states
+        regex:try.*catch.*expect
+
+  - name: Component Testing
+    description: Standards for component testing
+    matches: regex:.*\.test\.(ts|tsx)$
+    suggests:
+      - comment: Test component rendering
+        regex:render\(.*\)
+      - comment: Test user interactions
+        regex:fireEvent\.|userEvent\.
+      - comment: Test accessibility
+        regex:toHaveAccessibleName|toHaveRole
+      - comment: Test props
+        regex:rerender\(.*\)
+
+  - name: Mock Standards
+    description: Standards for mocking in tests
+    matches: regex:.*\.(test|spec)\.(ts|tsx)$
+    suggests:
+      - comment: Mock external dependencies
+        regex:jest\.mock\(
+      - comment: Use consistent mock naming
+        regex:mock[A-Z].*
+      - comment: Reset mocks between tests
+        regex:jest\.clearAllMocks\(
+      - comment: Mock API calls
+        regex:fetch\.mock|axios\.mock
+
+  - name: Test Coverage
+    description: Standards for test coverage
+    matches: regex:jest\.config\.(js|ts)$
+    requires:
+      - comment: Enable coverage reporting
+        regex:collectCoverage:\s*true
+      - comment: Set coverage thresholds
+        regex:coverageThreshold:\s*{
+
+  - name: Test Utils
+    description: Standards for test utilities
+    matches: regex:test/.*utils\.(ts|tsx)$
+    suggests:
+      - comment: Create test data factories
+        regex:export const create[A-Z].*=
+      - comment: Create common test helpers
+        regex:export const test[A-Z].*=
+
+  - name: Snapshot Testing
+    description: Standards for snapshot testing
+    matches: regex:.*\.(test|spec)\.(ts|tsx)$
+    suggests:
+      - comment: Use inline snapshots for small components
+        regex:toMatchInlineSnapshot
+      - comment: Use file snapshots for large components
+        regex:toMatchSnapshot
+      - comment: Update snapshots with changes
+        regex:test\.each
+
+  - name: Performance Testing
+    description: Standards for performance testing
+    matches: regex:e2e/.*performance.*\.(ts|tsx)$
+    suggests:
+      - comment: Measure page load times
+        regex:page\.waitForLoadState
+      - comment: Test resource loading
+        regex:page\.waitForResponse
+      - comment: Measure time to interactive
+        regex:page\.waitForSelector
