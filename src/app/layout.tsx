@@ -8,7 +8,7 @@ import { Footer } from '@/components/layout/footer';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Next.js App with Supabase Auth',
+  title: 'AI Dev Template',
   description: 'A Next.js application with Supabase authentication',
 };
 
