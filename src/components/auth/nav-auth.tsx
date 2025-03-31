@@ -30,6 +30,9 @@ export function NavAuth() {
 
   return (
     <div className="flex items-center gap-4">
+      <Link href="/dashboard">
+        <Button variant="ghost">Dashboard</Button>
+      </Link>
       <span className="text-sm text-gray-600">{user.email}</span>
       <Link href="/sign-out">
         <Button variant="outline">Sign Out</Button>

@@ -61,9 +61,9 @@ export async function middleware(request: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // If user is signed in and the current path is /sign-in or /sign-up, redirect to /
+  // If user is signed in and the current path is /sign-in or /sign-up, redirect to /dashboard
   if (session && ['/sign-in', '/sign-up'].includes(request.nextUrl.pathname)) {
-    return NextResponse.redirect(new URL('/', request.url));
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   // Define public routes that don't require authentication

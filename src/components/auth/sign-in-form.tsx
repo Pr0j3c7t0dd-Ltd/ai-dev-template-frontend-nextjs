@@ -19,6 +19,7 @@ import {
 import { Link } from '@/components/ui/link';
 import { SocialLoginButtons } from './social-login-buttons';
 import { Separator } from '@/components/ui/separator';
+import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -28,6 +29,8 @@ const formSchema = z.object({
 export function SignInForm() {
   const { signIn } = useAuth();
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -38,10 +41,16 @@ export function SignInForm() {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
+    setError('');
+
     try {
       await signIn(values.email, values.password);
+      router.push('/dashboard');
     } catch (error) {
       setError('Invalid email or password');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -85,8 +94,12 @@ export function SignInForm() {
                 )}
               />
               {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" className="w-full bg-black hover:bg-gray-800 text-white">
-                Sign In
+              <Button
+                type="submit"
+                className="w-full bg-black hover:bg-gray-800 text-white"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
           </Form>
