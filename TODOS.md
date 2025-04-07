@@ -1,0 +1,7 @@
+- Fix Menu
+- Visual Layouts
+- Mobile Screen
+- Tests
+- Fetch from Backend
+- JWT token
+- Add backend link
