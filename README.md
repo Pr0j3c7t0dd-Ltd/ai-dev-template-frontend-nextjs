@@ -5,6 +5,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 First, run the development server:
 
 ```bash
+# Standard development server
 npm run dev
 # or
 yarn dev
@@ -12,6 +13,26 @@ yarn dev
 pnpm dev
 # or
 bun dev
+
+# Development server with enhanced logging
+./scripts/start_dev_server.sh
+```
+
+The `start_dev_server.sh` script provides enhanced logging features:
+
+- Displays colorful console output
+- Automatically creates and manages log files in the `./logs` directory
+- Captures all server activity in `./logs/all.log` and errors in `./logs/error.log`
+- Respects the logging configuration in your `.env.local` file
+
+### Logging Configuration
+
+To customize logging behavior, add the following variables to your `.env.local` file:
+
+```bash
+# Logging configuration
+NEXT_PUBLIC_LOG_LEVEL=info   # Options: error, warn, info, http, debug
+NEXT_PUBLIC_LOG_TO_FILE=true # Options: true, false
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.

@@ -1,9 +1,11 @@
-import winston from 'winston';
-import fs from 'fs';
-import path from 'path';
+// Simple isomorphic logger compatible with both client and Edge environments
+// Server-side logging to files is handled separately to avoid Edge Runtime warnings
 
-// Define log levels
-const levels = {
+// Define minimum log level
+const LOG_LEVEL = process.env.NEXT_PUBLIC_LOG_LEVEL || 'info';
+
+// Log level hierarchy
+const LOG_LEVELS = {
   error: 0,
   warn: 1,
   info: 2,
@@ -11,58 +13,80 @@ const levels = {
   debug: 4,
 };
 
-// Define log colors
-const colors = {
-  error: 'red',
-  warn: 'yellow',
-  info: 'green',
-  http: 'magenta',
-  debug: 'blue',
+// Format timestamp
+const timestamp = () => {
+  return new Date().toISOString();
 };
 
-// Add colors to winston
-winston.addColors(colors);
+// Check if message should be logged based on level
+const shouldLog = (level: keyof typeof LOG_LEVELS): boolean => {
+  return LOG_LEVELS[level] <= LOG_LEVELS[LOG_LEVEL as keyof typeof LOG_LEVELS];
+};
 
-// Define the format for logging
-const format = winston.format.combine(
-  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-  winston.format.colorize({ all: true }),
-  winston.format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
-);
+// Color mapping for console logs
+const COLORS = {
+  error: '\x1b[31m', // red
+  warn: '\x1b[33m', // yellow
+  info: '\x1b[32m', // green
+  http: '\x1b[35m', // magenta
+  debug: '\x1b[34m', // blue
+  reset: '\x1b[0m', // reset
+};
 
-// Create logs directory if it doesn't exist
-if (process.env.NEXT_PUBLIC_LOG_TO_FILE === 'true') {
-  const logsDir = path.join(process.cwd(), 'logs');
-  if (!fs.existsSync(logsDir)) {
-    try {
-      fs.mkdirSync(logsDir, { recursive: true });
-      console.log('Created logs directory for file logging');
-    } catch (error) {
-      console.error('Failed to create logs directory:', error);
+/**
+ * Universal logger that works in any JavaScript environment
+ */
+const logger = {
+  /**
+   * Log error message
+   */
+  error: (message: string, meta?: Record<string, unknown>): void => {
+    if (shouldLog('error')) {
+      console.error(
+        `${COLORS.error}[ERROR]${COLORS.reset} ${timestamp()} - ${message}`,
+        meta || ''
+      );
     }
-  }
-}
+  },
 
-// Define transports
-const transports = [
-  new winston.transports.Console(),
-  ...(process.env.NEXT_PUBLIC_LOG_TO_FILE === 'true'
-    ? [
-        new winston.transports.File({
-          filename: 'logs/error.log',
-          level: 'error',
-        }),
-        new winston.transports.File({ filename: 'logs/all.log' }),
-      ]
-    : []),
-];
+  /**
+   * Log warning message
+   */
+  warn: (message: string, meta?: Record<string, unknown>): void => {
+    if (shouldLog('warn')) {
+      console.warn(`${COLORS.warn}[WARN]${COLORS.reset} ${timestamp()} - ${message}`, meta || '');
+    }
+  },
 
-// Create the logger
-const logger = winston.createLogger({
-  level: process.env.NEXT_PUBLIC_LOG_LEVEL || 'info',
-  levels,
-  format,
-  transports,
-});
+  /**
+   * Log info message
+   */
+  info: (message: string, meta?: Record<string, unknown>): void => {
+    if (shouldLog('info')) {
+      console.info(`${COLORS.info}[INFO]${COLORS.reset} ${timestamp()} - ${message}`, meta || '');
+    }
+  },
+
+  /**
+   * Log HTTP request/response
+   */
+  http: (message: string, meta?: Record<string, unknown>): void => {
+    if (shouldLog('http')) {
+      console.log(`${COLORS.http}[HTTP]${COLORS.reset} ${timestamp()} - ${message}`, meta || '');
+    }
+  },
+
+  /**
+   * Log debug information
+   */
+  debug: (message: string, meta?: Record<string, unknown>): void => {
+    if (shouldLog('debug')) {
+      console.debug(
+        `${COLORS.debug}[DEBUG]${COLORS.reset} ${timestamp()} - ${message}`,
+        meta || ''
+      );
+    }
+  },
+};
 
 export default logger;

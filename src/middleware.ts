@@ -1,7 +1,9 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import logger from '@/lib/logger';
 
 export async function middleware(request: NextRequest) {
+  const start = Date.now();
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -76,9 +78,24 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/sign-in', request.url));
   }
 
+  // Log the request after it completes
+  const duration = Date.now() - start;
+  const url = request.nextUrl.pathname;
+  const method = request.method;
+  logger.http(`[Request] ${method} ${url} - ${duration}ms`);
+
   return response;
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - images/ or public/ (public files)
+     */
+    '/((?!_next/static|_next/image|favicon.ico|images/|public/).*)',
+  ],
 };
