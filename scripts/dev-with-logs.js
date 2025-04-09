@@ -10,12 +10,17 @@ process.env.NEXT_PUBLIC_LOG_LEVEL = process.env.NEXT_PUBLIC_LOG_LEVEL || 'info';
 process.env.NEXT_PUBLIC_LOG_TO_FILE = process.env.NEXT_PUBLIC_LOG_TO_FILE || 'true';
 
 // Debug logging for environment variables
-console.log(`Log environment variables loaded:
-- NEXT_PUBLIC_LOG_LEVEL: ${process.env.NEXT_PUBLIC_LOG_LEVEL}
-- NEXT_PUBLIC_LOG_TO_FILE: ${process.env.NEXT_PUBLIC_LOG_TO_FILE}`);
+console.log(`Loading environment variables from .env.local
+- NEXT_PUBLIC_LOG_LEVEL=${process.env.NEXT_PUBLIC_LOG_LEVEL}
+- NEXT_PUBLIC_LOG_TO_FILE=${process.env.NEXT_PUBLIC_LOG_TO_FILE}
+`);
 
 // Import server logger to ensure logs directory is created
 import serverLogger from './server-logger.js';
+
+// Clear existing logs
+console.log('\nClearing previous logs...');
+serverLogger.clearLogs();
 
 // Log startup with colors
 const startupMessage = 'Starting Next.js development server with logging enabled';

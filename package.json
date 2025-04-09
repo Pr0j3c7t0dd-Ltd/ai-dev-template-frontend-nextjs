@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "start:logs": "node scripts/start-with-logs.js",
-    "logs:clear": "node -e \"require('./scripts/server-logger').clearLogs()\"",
+    "logs:clear": "node scripts/clear-logs.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "jest",
