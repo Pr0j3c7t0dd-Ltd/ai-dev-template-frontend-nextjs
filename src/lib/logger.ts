@@ -1,4 +1,6 @@
 import winston from 'winston';
+import fs from 'fs';
+import path from 'path';
 
 // Define log levels
 const levels = {
@@ -25,8 +27,21 @@ winston.addColors(colors);
 const format = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   winston.format.colorize({ all: true }),
-  winston.format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`)
+  winston.format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
 );
+
+// Create logs directory if it doesn't exist
+if (process.env.NEXT_PUBLIC_LOG_TO_FILE === 'true') {
+  const logsDir = path.join(process.cwd(), 'logs');
+  if (!fs.existsSync(logsDir)) {
+    try {
+      fs.mkdirSync(logsDir, { recursive: true });
+      console.log('Created logs directory for file logging');
+    } catch (error) {
+      console.error('Failed to create logs directory:', error);
+    }
+  }
+}
 
 // Define transports
 const transports = [
@@ -50,4 +65,4 @@ const logger = winston.createLogger({
   transports,
 });
 
-export default logger; 
+export default logger;

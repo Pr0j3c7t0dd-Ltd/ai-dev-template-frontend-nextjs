@@ -4,6 +4,7 @@ import './globals.css';
 import { AuthProvider } from '@/lib/context/auth-context';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
+import logger from '@/lib/logger';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -13,6 +14,9 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // Log application startup
+  logger.info('[Layout] Application rendered');
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} min-h-screen bg-background antialiased`}>
