@@ -1,121 +1,130 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User, Provider } from '@supabase/supabase-js';
-import { createClient } from '../supabase/client';
-import { UserDetails, getUserDetails, checkApiStatus } from '../api';
+import type { User, Session, AuthProvider } from '@/types/auth';
+import { authApi, userApi, checkApiStatus } from '../backend-api';
 
 type AuthContextType = {
   user: User | null;
-  userDetails: UserDetails | null;
+  session: Session | null;
   loading: boolean;
   apiStatus: { isUp: boolean; lastChecked: Date | null };
   checkApiConnection: () => Promise<boolean>;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
-  signInWithSocial: (provider: Provider) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  signInWithSocial: (provider: AuthProvider) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [apiStatus, setApiStatus] = useState<{ isUp: boolean; lastChecked: Date | null }>({
     isUp: true,
     lastChecked: null,
   });
-  const supabase = createClient();
 
-  // Fetch user details from backend when authenticated
+  // Load user from session cookie on initial load
   useEffect(() => {
-    const fetchUserDetails = async () => {
-      if (user) {
-        try {
-          setLoading(true);
-          const details = await getUserDetails();
-          setUserDetails(details);
-          setApiStatus({ isUp: true, lastChecked: new Date() });
-        } catch (error) {
-          console.error(
-            'Error fetching user details:',
-            error instanceof Error ? error.message : String(error)
-          );
-          // Don't clear userDetails on error to maintain existing data if it's a temporary issue
+    const fetchCurrentUser = async () => {
+      try {
+        setLoading(true);
+        const response = await userApi.getCurrentUser();
 
-          // Handle specific error types
+        if (response.success && response.data) {
+          setUser(response.data);
+          setApiStatus({ isUp: true, lastChecked: new Date() });
+        } else {
+          setUser(null);
+          // Only mark API as down if there's a network error, not for auth errors
           if (
-            error instanceof Error &&
-            (error.message.includes('Authentication failed') ||
-              error.message.includes('Authentication required'))
+            response.error &&
+            (response.error.includes('Network error') || response.error.includes('Failed to fetch'))
           ) {
-            console.warn('Authentication issue detected when fetching user details');
-            setApiStatus({ isUp: false, lastChecked: new Date() });
-          } else if (
-            error instanceof Error &&
-            (error.message.includes('Failed to fetch') ||
-              error.message.includes('Could not connect') ||
-              error.message.includes('Connection timed out') ||
-              error.message.includes('Failed to connect to the backend API'))
-          ) {
-            console.warn(
-              'Backend API connection issue. Please check if the backend server is running.'
-            );
             setApiStatus({ isUp: false, lastChecked: new Date() });
           }
-        } finally {
-          setLoading(false);
         }
-      } else {
-        setUserDetails(null);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchUserDetails();
-  }, [user]);
-
-  useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [supabase.auth]);
+    fetchCurrentUser();
+  }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) throw error;
+    try {
+      const response = await authApi.signIn(email, password);
+
+      if (!response.success || !response.data) {
+        throw new Error(response.error || 'Could not sign in. Please try again later.');
+      }
+
+      setUser(response.data.user);
+      setSession(response.data.session);
+      setApiStatus({ isUp: true, lastChecked: new Date() });
+    } catch (error) {
+      console.error('Sign in error:', error);
+      throw error;
+    }
   };
 
-  const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-    if (error) throw error;
+  const signUp = async (email: string, password: string): Promise<void> => {
+    try {
+      const response = await authApi.signUp(email, password);
+
+      if (!response.success) {
+        throw new Error(response.error || 'Could not create account. Please try again later.');
+      }
+
+      // Don't return data, to match the Promise<void> return type
+    } catch (error) {
+      console.error('Sign up error:', error);
+      throw error;
+    }
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    try {
+      const response = await authApi.signOut();
+
+      if (!response.success) {
+        throw new Error(response.error || 'Could not sign out. Please try again later.');
+      }
+
+      setUser(null);
+      setSession(null);
+    } catch (error) {
+      console.error('Sign out error:', error);
+      throw error;
+    }
   };
 
-  const signInWithSocial = async (provider: Provider) => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
-      },
-    });
-    if (error) throw error;
+  const resetPassword = async (email: string) => {
+    try {
+      const response = await authApi.resetPassword(email);
+
+      if (!response.success) {
+        throw new Error(
+          response.error || 'Could not request password reset. Please try again later.'
+        );
+      }
+    } catch (error) {
+      console.error('Reset password error:', error);
+      throw error;
+    }
+  };
+
+  const signInWithSocial = async (provider: AuthProvider) => {
+    // Redirect to the OAuth provider URL from the backend
+    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/auth/oauth/${provider}`;
   };
 
   // Check if API is available
@@ -134,13 +143,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        userDetails,
+        session,
         loading,
         apiStatus,
         checkApiConnection,
         signIn,
         signUp,
         signOut,
+        resetPassword,
         signInWithSocial,
       }}
     >

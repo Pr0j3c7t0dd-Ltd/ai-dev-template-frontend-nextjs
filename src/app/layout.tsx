@@ -9,8 +9,11 @@ import logger from '@/lib/logger';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'AI Dev Template',
-  description: 'A Next.js application with Supabase authentication',
+  title: {
+    template: '%s | AI Dev Template',
+    default: 'AI Dev Template',
+  },
+  description: 'A Next.js application with secure authentication',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

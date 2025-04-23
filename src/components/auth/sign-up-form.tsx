@@ -48,7 +48,16 @@ export function SignUpForm() {
     try {
       await signUp(values.email, values.password);
     } catch (error) {
-      setError('Error creating account');
+      let message = 'Error creating account';
+      if (error instanceof Error) {
+        message = error.message;
+      } else if (typeof error === 'string') {
+        message = error;
+      }
+      setError(message);
+      // Log error for debugging
+      // eslint-disable-next-line no-console
+      console.error('Sign up error:', error);
     }
   };
 

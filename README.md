@@ -41,32 +41,47 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Supabase Configuration
+## Backend API Integration
 
-This project uses [Supabase](https://supabase.com) for authentication and data storage. To get started with local development:
+This project now uses a dedicated FastAPI backend for authentication and data operations instead of directly connecting to Supabase from the frontend. This architecture provides better security and separation of concerns.
 
-1. Start your local Supabase backend server:
+### Configuration
+
+1. Configure the API backend URL in your `.env.local` file:
 
    ```bash
-   # Navigate to your Supabase backend directory
-   cd ../your-supabase-backend
+   NEXT_PUBLIC_BACKEND_API_URL=http://localhost:8000
+   ```
 
-   # Start the local Supabase server
-   npm run start:dev
+2. Start your FastAPI backend server:
+
+   ```bash
+   # Navigate to your FastAPI backend directory
+   cd ../your-fastapi-backend
+
+   # Start the backend server
+   python -m uvicorn main:app --reload
    # or use the appropriate command for your backend
    ```
 
-2. Get your Supabase credentials:
+3. Ensure that the backend is properly configured with Supabase credentials and other necessary environment variables as specified in the `BACKEND_REQUIREMENTS.md` document.
 
-   - Once your local Supabase server is running, it will output the necessary credentials in the terminal
-   - Look for the `SUPABASE_URL` and `SUPABASE_ANON_KEY` values
-   - Alternatively, these can be found in the backend's configuration files or admin dashboard at `http://localhost:8000/project/settings/api`
+### Authentication Flow
 
-3. Copy the `.env.example` file to `.env.local` and update with your credentials:
-   ```bash
-   cp .env.example .env.local
-   # Then edit .env.local with your credentials
-   ```
+The authentication flow now works as follows:
+
+1. Frontend sends auth requests (login, signup, etc.) to the FastAPI backend
+2. Backend communicates with Supabase and handles the authentication logic
+3. Backend sets HTTP-only cookies for maintaining the session
+4. Frontend uses these cookies for authenticated requests
+
+This approach improves security by:
+
+- Removing direct access to Supabase credentials from the frontend
+- Using HTTP-only cookies instead of localStorage for storing tokens
+- Centralizing authentication logic in the backend
+
+See `BACKEND_REQUIREMENTS.md` for detailed specifications of the required backend API endpoints.
 
 ## Learn More
 
