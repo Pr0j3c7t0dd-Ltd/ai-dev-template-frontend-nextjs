@@ -93,7 +93,7 @@ const fetchApi = async <T>(
 export const authApi = {
   // Sign in with email and password
   signIn: async (email: string, password: string): Promise<ApiResponse<SignInResponse>> => {
-    return fetchApi<SignInResponse>('/auth/sign-in', {
+    return fetchApi<SignInResponse>('/api/v1/auth/sign-in', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
@@ -101,7 +101,7 @@ export const authApi = {
 
   // Sign up with email and password
   signUp: async (email: string, password: string): Promise<ApiResponse<SignUpResponse>> => {
-    return fetchApi<SignUpResponse>('/auth/sign-up', {
+    return fetchApi<SignUpResponse>('/api/v1/auth/sign-up', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
@@ -109,14 +109,14 @@ export const authApi = {
 
   // Sign out current user
   signOut: async (): Promise<ApiResponse<void>> => {
-    return fetchApi('/auth/sign-out', {
+    return fetchApi('/api/v1/auth/sign-out', {
       method: 'POST',
     });
   },
 
   // Request password reset
   resetPassword: async (email: string): Promise<ApiResponse<PasswordResetResponse>> => {
-    return fetchApi<PasswordResetResponse>('/auth/reset-password', {
+    return fetchApi<PasswordResetResponse>('/api/v1/auth/reset-password', {
       method: 'POST',
       body: JSON.stringify({ email }),
     });
@@ -124,7 +124,7 @@ export const authApi = {
 
   // Change password with reset token
   changePassword: async (token: string, password: string): Promise<ApiResponse<void>> => {
-    return fetchApi('/auth/change-password', {
+    return fetchApi('/api/v1/auth/change-password', {
       method: 'POST',
       body: JSON.stringify({ token, password }),
     });
@@ -132,21 +132,21 @@ export const authApi = {
 
   // Verify email with token
   verifyEmail: async (token: string): Promise<ApiResponse<void>> => {
-    return fetchApi(`/auth/verify-email/${token}`, {
+    return fetchApi(`/api/v1/auth/verify-email/${token}`, {
       method: 'GET',
     });
   },
 
   // Refresh authentication tokens
   refreshToken: async (): Promise<ApiResponse<RefreshTokenResponse>> => {
-    return fetchApi<RefreshTokenResponse>('/auth/refresh', {
+    return fetchApi<RefreshTokenResponse>('/api/v1/auth/refresh', {
       method: 'POST',
     });
   },
 
   // Verify token from OAuth callback
   verifyToken: async (token: string): Promise<ApiResponse<VerifyTokenResponse>> => {
-    return fetchApi<VerifyTokenResponse>('/auth/verify-token', {
+    return fetchApi<VerifyTokenResponse>('/api/v1/auth/verify-token', {
       method: 'POST',
       body: JSON.stringify({ token }),
     });
@@ -157,17 +157,17 @@ export const authApi = {
 export const userApi = {
   // Get current user profile
   getCurrentUser: async (): Promise<ApiResponse<User>> => {
-    return fetchApi<User>('/users/me');
+    return fetchApi<User>('/api/v1/users/me');
   },
 
   // Get user settings
   getUserSettings: async (): Promise<ApiResponse<UserSettings>> => {
-    return fetchApi<UserSettings>('/users/me/settings');
+    return fetchApi<UserSettings>('/api/v1/users/me/settings');
   },
 
   // Update user settings
   updateUserSettings: async (settings: UserSettingsBase): Promise<ApiResponse<UserSettings>> => {
-    return fetchApi<UserSettings>('/users/me/settings', {
+    return fetchApi<UserSettings>('/api/v1/users/me/settings', {
       method: 'PUT',
       body: JSON.stringify(settings),
     });
@@ -188,7 +188,7 @@ export interface UserSettings extends UserSettingsBase {
 // Health check for the API
 export const checkApiStatus = async (): Promise<boolean> => {
   try {
-    const response = await fetch(`${API_URL}/health`, {
+    const response = await fetch(`${API_URL}/api/v1/health`, {
       method: 'GET',
     });
     return response.ok;
