@@ -1,0 +1,1129 @@
+---
+description: Rules to enforce consistent and secure API authentication patterns using JWT tokens
+globs: 
+alwaysApply: false
+---
+---
+name: API Authentication Rules
+description: Rules to enforce consistent and secure API authentication patterns using JWT tokens
+rules:
+  - name: API client structure
+    description: Enforce a consistent API client structure that uses JWT tokens
+    matches: regex:lib/api/.*\.ts$
+    requires:
+      - regex:import\s+.*\s+from\s+['"].*axios.*['"]
+      - regex:process\.env\.NEXT_PUBLIC_API_URL
+
+  - name: API authentication
+    description: Ensure JWT tokens are used for authenticated API calls
+    matches: regex:lib/api/.*\.ts$
+    requires:
+      - regex:Authorization.*Bearer.*token
+      - regex:const\s+.*\s+=\s+axios\.create\(\{.*\}\)
+
+  - name: Environment variables
+    description: Ensure required API environment variables are defined
+    matches: regex:\.env.*
+    requires:
+      - regex:NEXT_PUBLIC_API_URL=.*
+    suggests:
+      - regex:NEXT_PUBLIC_API_TIMEOUT=.*
+
+  - name: API client usage
+    description: Enforce consistent use of the API client
+    matches: regex:(?:components|pages|app)/.*\.(tsx|ts)$
+    suggests:
+      - regex:import\s+.*\s+from\s+['"]@/lib/api.*['"]
+      - regex:useAuth.*hook
+
+  - name: Auth utilities
+    description: Enforce consistent authentication utilities
+    matches: regex:lib/auth/.*\.ts$
+    requires:
+      - regex:getToken
+      - regex:setToken
+      - regex:removeToken
+    suggests:
+      - regex:isAuthenticated
+      - regex:refreshToken
+
+  - name: API error handling
+    description: Ensure proper error handling for API requests
+    matches: regex:lib/api/.*\.ts$
+    requires:
+      - regex:try\s*\{.*\}\s*catch\s*\(.*\)\s*\{
+      - regex:error.*response
+
+  - name: Authentication hooks
+    description: Enforce consistent authentication hooks
+    matches: regex:hooks/.*Auth.*\.ts$
+    requires:
+      - regex:useAuth
+    suggests:
+      - regex:isLoading
+      - regex:isAuthenticated
+      - regex:user
+      - regex:login
+      - regex:logout
+      - regex:register
+
+  - name: Protected routes
+    description: Ensure protected routes check for authentication
+    matches: regex:(?:pages|app)/dashboard/.*\.(tsx|ts)$
+    requires:
+      - regex:useAuth
+      - regex:isAuthenticated
+      - regex:redirect
+
+  - name: API token refresh
+    description: Encourage token refresh implementation
+    matches: regex:lib/api/.*\.ts$
+    suggests:
+      - regex:refreshToken
+      - regex:tokenExpired
+      - regex:interceptors
+
+  - name: Secure storage
+    description: Enforce secure token storage
+    matches: regex:lib/auth/.*\.ts$
+    suggests:
+      - regex:localStorage
+      - regex:sessionStorage
+      - regex:httpOnly
+      - regex:cookie 
+---
+description: Rules for creating maintainable and secure API routes in Next.js applications
+globs: 
+alwaysApply: false
+---
+---
+name: Next.js API Routes Best Practices
+description: Rules for creating maintainable and secure API routes in Next.js applications
+rules:
+  # General API Route Structure
+  - name: API route handler signature
+    description: Ensure proper handler signature for API routes
+    matches: regex:pages/api/.*\.ts$
+    requires:
+      - regex:export default (async )?function handler\(req, res\) {
+
+  - name: Type NextApiRequest and NextApiResponse
+    description: Use proper typing for API route handlers
+    matches: regex:pages/api/.*\.ts$
+    requires:
+      - regex:import (type )?\{ NextApiRequest, NextApiResponse \} from ['"]next['"]
+      - regex:export default (async )?function handler\(req: NextApiRequest, res: NextApiResponse(\<.*\>)?\) {
+
+  - name: Handle all HTTP methods
+    description: Handle all relevant HTTP methods or return 405 for unsupported methods
+    matches: regex:pages/api/.*\.ts$
+    requires:
+      - regex:if \(req\.method === ['"]GET['"]\) {
+      - regex:(else )?if \(req\.method === ['"]POST['"]\) {
+      - regex:else {.*res\.status\(405\)\.json\(\{.*\}\)}
+
+  # Error Handling
+  - name: Proper error handling
+    description: Implement proper error handling in API routes
+    matches: regex:pages/api/.*\.ts$
+    requires:
+      - regex:try {
+      - regex:catch \(error\) {
+      - regex:res\.status\(5\d\d\)\.json\(\{
+
+  - name: Validate input
+    description: Validate input data in API routes
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:const \{ error \} = validate
+      - regex:if \(!.*\) {.*res\.status\(400\)\.json\(\{.*\}\)}
+
+  # API Response Structure
+  - name: Consistent response structure
+    description: Use consistent response structure across API routes
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:res\.status\(\d\d\d\)\.json\(\{ (success|data|error): 
+    prefers:
+      - pattern: res.json({
+        replace: res.status(200).json({
+      - pattern: res.end()
+        replace: res.status(204).end()
+
+  # Authentication
+  - name: Authentication in API routes
+    description: Implement authentication checks in protected API routes
+    matches: regex:pages/api/(?!auth/).*\.ts$
+    suggests:
+      - regex:const session = await getSession\(\{ req \}\)
+      - regex:if \(!session\) {.*res\.status\(401\)\.json\(\{.*\}\)}
+
+  # Rate Limiting
+  - name: Implement rate limiting
+    description: Implement rate limiting for API routes
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:import rateLimit from
+      - regex:const limiter = rateLimit\({
+
+  # API Route Organization
+  - name: Organize API logic
+    description: Separate API logic from the handler
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:import \{ .* \} from ['"]@/lib/api/
+      - regex:import \{ .* \} from ['"]@/utils/api/
+
+  # Database Operations
+  - name: Proper database handling
+    description: Handle database operations properly in API routes
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:import \{ .* \} from ['"]@/lib/db
+      - regex:await .*\.findOne\(
+      - regex:await .*\.insertOne\(
+      - regex:await .*\.updateOne\(
+      - regex:await .*\.deleteOne\(
+
+  # Request Validation
+  - name: Use zod or joi for validation
+    description: Use zod or joi for input validation
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:import \{ z \} from ['"]zod['"]
+      - regex:import Joi from ['"]joi['"]
+      - regex:const schema = z\.object\({
+      - regex:const schema = Joi\.object\({
+
+  # Middleware Usage
+  - name: Use middleware patterns
+    description: Use middleware patterns for common operations
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:import \{ .* \} from ['"]@/middleware/
+      - regex:export default .* withMiddleware\(handler\)
+
+  # API Documentation
+  - name: Document API routes
+    description: Include JSDoc for API routes
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:/\*\*[\s\S]*\*/
+      - regex:@param \{NextApiRequest\} req
+      - regex:@param \{NextApiResponse\} res
+      - regex:@returns \{Promise<void>\}
+
+  # CORS Handling
+  - name: Handle CORS properly
+    description: Handle CORS headers properly in API routes
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:res\.setHeader\(['"]Access-Control-Allow-Origin['"], 
+      - regex:res\.setHeader\(['"]Access-Control-Allow-Methods['"], 
+      - regex:if \(req\.method === ['"]OPTIONS['"]\) {
+
+  # Environment Variables
+  - name: Use environment variables
+    description: Use environment variables for sensitive information
+    matches: regex:pages/api/.*\.ts$
+    prefers:
+      - pattern: "apiKey: \".*\""
+        replace: "apiKey: process.env.API_KEY"
+      - pattern: "password: \".*\""
+        replace: "password: process.env.DB_PASSWORD"
+    suggests:
+      - regex:process\.env\.
+
+  # Pagination
+  - name: Implement pagination
+    description: Implement pagination for API routes that return lists
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:const page = (parseInt\()?req\.query\.page
+      - regex:const limit = (parseInt\()?req\.query\.limit
+      - regex:const skip = \(page - 1\) \* limit
+
+  # Security Headers
+  - name: Set security headers
+    description: Set security headers in API responses
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:res\.setHeader\(['"]Content-Security-Policy['"], 
+      - regex:res\.setHeader\(['"]X-Content-Type-Options['"], ['"]nosniff['"]\)
+
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+name: Next.js Folder Structure
+description: Rules to enforce a clean and scalable folder structure for Next.js applications
+rules:
+  # Root-level folder structure
+  - name: Core directories structure
+    description: Enforce the existence of core directories in the project
+    matches: regex:.*/
+    excludes:
+      - regex:node_modules/.*
+      - regex:.next/.*
+    requires:
+      - folder:pages
+      - folder:public
+      - folder:styles
+      - folder:components
+      - folder:lib
+      - folder:hooks
+      - folder:context
+      - folder:types
+      - folder:utils
+
+  # Pages directory structure
+  - name: Pages structure
+    description: Organize pages with proper folder structure
+    matches: regex:pages/
+    requires:
+      - folder:api
+      - file:_app.tsx
+      - file:_document.tsx
+      - file:index.tsx
+
+  - name: API routes organization
+    description: Organize API routes in a structured way
+    matches: regex:pages/api/
+    suggests:
+      - folder:auth
+      - folder:users
+      - folder:posts
+      - file:index.ts
+
+  # Components directory structure
+  - name: Components organization
+    description: Organize components in a structured way
+    matches: regex:components/
+    requires:
+      - folder:ui
+      - folder:layout
+      - folder:common
+      - folder:forms
+    suggests:
+      - folder:sections
+      - folder:navigation
+      - folder:cards
+      - folder:modals
+
+  - name: UI components
+    description: Organize UI components for shadcn
+    matches: regex:components/ui/
+    suggests:
+      - file:button.tsx
+      - file:input.tsx
+      - file:card.tsx
+      - file:dialog.tsx
+      - file:select.tsx
+      - file:form.tsx
+
+  - name: Layout components
+    description: Organize layout components
+    matches: regex:components/layout/
+    suggests:
+      - file:header.tsx
+      - file:footer.tsx
+      - file:sidebar.tsx
+      - file:layout.tsx
+
+  # Module structure
+  - name: Feature-based structure
+    description: Encourage feature-based organization within larger sections
+    matches: regex:(?:pages|components)/(?!_app|_document|api|ui|layout|common|forms).*/
+    suggests:
+      - file:index.tsx
+      - file:types.ts
+      - file:hooks.ts
+      - file:utils.ts
+
+  # Hooks directory structure
+  - name: Hooks organization
+    description: Organize custom hooks
+    matches: regex:hooks/
+    suggests:
+      - file:useAuth.ts
+      - file:useFetch.ts
+      - file:useForm.ts
+      - file:index.ts
+
+  # Context directory structure
+  - name: Context organization
+    description: Organize context providers
+    matches: regex:context/
+    suggests:
+      - file:AuthContext.tsx
+      - file:ThemeContext.tsx
+      - file:index.ts
+
+  # Types directory structure
+  - name: Types organization
+    description: Organize TypeScript types
+    matches: regex:types/
+    suggests:
+      - file:index.ts
+      - file:api.ts
+      - file:auth.ts
+      - file:user.ts
+
+  # Utils directory structure
+  - name: Utils organization
+    description: Organize utility functions
+    matches: regex:utils/
+    suggests:
+      - file:api.ts
+      - file:format.ts
+      - file:validation.ts
+      - file:index.ts
+
+  # Lib directory structure
+  - name: Lib organization
+    description: Organize external service integrations
+    matches: regex:lib/
+    suggests:
+      - file:db.ts
+      - file:auth.ts
+      - file:api.ts
+      - file:index.ts
+
+  # Styles directory structure
+  - name: Styles organization
+    description: Organize styles
+    matches: regex:styles/
+    requires:
+      - file:globals.css
+    suggests:
+      - file:variables.css
+      - file:animations.css
+
+  # Public directory structure
+  - name: Public assets organization
+    description: Organize public assets
+    matches: regex:public/
+    suggests:
+      - folder:images
+      - folder:icons
+      - folder:fonts
+      - file:favicon.ico
+      - file:robots.txt
+
+  # File naming conventions
+  - name: Component file naming
+    description: Enforce consistent file naming for components
+    matches: regex:components/.*\.tsx$
+    requires:
+      - regex:^[A-Z][a-zA-Z0-9]*\.tsx$
+
+  - name: Utility file naming
+    description: Enforce consistent file naming for utility files
+    matches: regex:(utils|lib|hooks)/.*\.ts$
+    requires:
+      - regex:^[a-z][a-zA-Z0-9]*\.ts$
+
+  - name: Page file naming
+    description: Enforce consistent file naming for pages
+    matches: regex:pages/(?!_app|_document|api).*\.tsx$
+    requires:
+      - regex:^(index|\[[a-z]+\]|[a-z][a-zA-Z0-9]*)\.tsx$
+
+  # Index exports
+  - name: Use index exports
+    description: Use index files to export components and functions
+    matches: regex:(?:components|hooks|utils|lib|context|types)/[^/]*/index\.tsx?$
+    suggests:
+      - regex:export \* from ['"]\./
+      - regex:export \{ default as [A-Z][a-zA-Z]* \} from ['"]\./
+
+---
+description: Rules for maintaining a clean and consistent Next.js project structure and code quality
+globs: 
+alwaysApply: false
+---
+---
+name: Next.js General Best Practices
+description: Rules for maintaining a clean and consistent Next.js project structure and code quality
+rules:
+  # Project Structure Rules
+  - name: Follow Next.js folder convention
+    description: Use the standard Next.js folder structure
+    matches: regex:.*/
+    excludes:
+      - regex:node_modules/.*
+      - regex:.next/.*
+    requires:
+      # Core directories
+      - folder:app
+      - folder:public
+      - folder:components
+      - folder:lib
+      - folder:types
+      
+  - name: Pages should be in pages directory
+    description: All page components should be in the pages directory
+    matches: regex:pages/.*\.tsx?$
+    requires:
+      - regex:^import .* from ['"].*['"];?$
+      - regex:^export default function .*\(.*\).*{$
+
+  - name: API routes should be in api directory
+    description: All API route handlers should be in the pages/api directory
+    matches: regex:pages/api/.*\.tsx?$
+    requires:
+      - regex:export default (async )?function handler\(.*\).*{$
+
+  - name: Components should be in components directory
+    description: All reusable UI components should be in the components directory
+    matches: regex:components/.*\.tsx?$
+    requires:
+      - regex:^import .* from ['"].*['"];?$
+      - regex:^(export default |export const ).*
+
+  # Code Quality Rules
+  - name: Use TypeScript exclusively
+    description: All source files should be TypeScript
+    matches: 
+      - regex:.*\.(ts|tsx)$
+    requires:
+      - regex:^(import|export|const|function|interface|type|enum).*
+
+  - name: Props should be typed
+    description: All component props should be typed with interfaces or types
+    matches: regex:components/.*\.tsx$
+    requires:
+      - regex:(interface|type) .*Props
+
+  - name: API responses should be typed
+    description: API responses should have proper type definitions
+    matches: regex:pages/api/.*\.ts$
+    requires:
+      - regex:(interface|type) .*Response
+
+  - name: Use absolute imports
+    description: Use absolute imports instead of relative paths for cleaner imports
+    matches: regex:.*\.(ts|tsx)$
+    prefers:
+      - pattern: import .* from "../../components/.*"
+        replace: import .* from "@/components/.*"
+      - pattern: import .* from "../../lib/.*"
+        replace: import .* from "@/lib/.*"
+
+  # Data Fetching Rules
+  - name: API calls should use SWR or React Query
+    description: Use SWR or React Query for data fetching
+    matches: regex:.*\.(ts|tsx)$
+    prefers:
+      - pattern: fetch\(
+        replace: useSWR\(
+      - pattern: fetch\(
+        replace: useQuery\(
+
+  - name: Use getServerSideProps for server-rendered pages
+    description: Server-rendered pages should use getServerSideProps
+    matches: regex:pages/(?!api/).*\.tsx?$
+    suggests:
+      - regex:export (const|async function) getServerSideProps
+
+  - name: Use getStaticProps for static pages
+    description: Static pages should use getStaticProps
+    matches: regex:pages/(?!api/).*\.tsx?$
+    suggests:
+      - regex:export (const|async function) getStaticProps
+
+  # Performance Rules
+  - name: Use Next.js Image component
+    description: Use Next.js Image component instead of HTML img
+    matches: regex:.*\.tsx?$
+    prefers:
+      - pattern: <img
+        replace: <Image
+      - pattern: src="/"
+        replace: src="/"
+
+  - name: Use Next.js Link component
+    description: Use Next.js Link component instead of a tags for internal navigation
+    matches: regex:.*\.tsx?$
+    prefers:
+      - pattern: <a href="/"
+        replace: <Link href="/"
+
+  # Security Rules
+  - name: Sanitize API inputs
+    description: Always validate and sanitize user inputs in API routes
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:(validate|sanitize|schema)
+
+  - name: Use environment variables
+    description: Use environment variables for sensitive information
+    matches: regex:.*\.(ts|tsx)$
+    prefers:
+      - pattern: "apiKey: \".*\""
+        replace: "apiKey: process.env.API_KEY"
+      - pattern: "password: \".*\""
+        replace: "password: process.env.PASSWORD"
+
+  # Error Handling Rules
+  - name: Implement error boundaries
+    description: Use error boundaries for component error handling
+    matches: regex:pages/.*\.tsx?$
+    suggests:
+      - regex:ErrorBoundary
+      - regex:try {.*} catch \(error\) {.*}
+
+  - name: Handle API errors
+    description: Properly handle and respond to errors in API routes
+    matches: regex:pages/api/.*\.ts$
+    requires:
+      - regex:try {.*} catch \(error\) {.*res\.status\(5\d\d\)\.json\({.*}\)}
+
+---
+description: Rules to enforce consistent logging practices across the application using Winston
+globs: 
+alwaysApply: false
+---
+---
+name: Logging Standards
+description: Rules to enforce consistent logging practices across the application using Winston
+rules:
+  - name: Logger Import
+    description: Enforce consistent logger import
+    matches: regex:.*\.(ts|tsx)$
+    suggests:
+      - regex:import logger from '@/lib/logger';
+
+  - name: Log Levels Usage
+    description: Define when to use different log levels
+    matches: regex:.*\.(ts|tsx)$
+    suggests:
+      - comment: Use error for application errors and failures
+        regex:logger\.error\(.*\)
+      - comment: Use warn for deprecation notices and non-critical issues
+        regex:logger\.warn\(.*\)
+      - comment: Use info for general operational messages
+        regex:logger\.info\(.*\)
+      - comment: Use http for HTTP request logging
+        regex:logger\.http\(.*\)
+      - comment: Use debug for detailed debugging information
+        regex:logger\.debug\(.*\)
+
+  - name: API Route Logging
+    description: Enforce logging in API routes
+    matches: regex:src/app/api/.*route\.(ts|js)$
+    requires:
+      - regex:logger\.http\(.*request.*\)
+      - regex:logger\.error\(.*error.*\)
+
+  - name: Error Boundary Logging
+    description: Enforce error logging in error boundaries
+    matches: regex:.*ErrorBoundary.*\.(ts|tsx)$
+    requires:
+      - regex:logger\.error\(.*error.*\)
+
+  - name: Environment Variables
+    description: Define required environment variables for logging
+    matches: regex:\.env.*
+    suggests:
+      - comment: Log level configuration
+        regex:NEXT_PUBLIC_LOG_LEVEL=
+      - comment: File logging toggle
+        regex:NEXT_PUBLIC_LOG_TO_FILE=
+
+  - name: Log Format
+    description: Enforce consistent log message format
+    matches: regex:.*\.(ts|tsx)$
+    suggests:
+      - comment: Include context in log messages
+        regex:logger\.[a-z]+\(`\[.*\].*`.*\)
+      - comment: Include error stack in error logs
+        regex:logger\.error\(.*error\.stack.*\)
+
+  - name: Performance Logging
+    description: Guidelines for performance-related logging
+    matches: regex:.*\.(ts|tsx)$
+    suggests:
+      - comment: Log slow operations
+        regex:logger\.warn\(`.*took longer than.*\)
+      - comment: Log memory usage for heavy operations
+        regex:logger\.info\(`.*memory usage.*\)
+
+  - name: Security Logging
+    description: Guidelines for security-related logging
+    matches: regex:.*\.(ts|tsx)$
+    requires:
+      - comment: Never log sensitive information
+        regex:(?!.*password.*|.*token.*|.*secret.*) 
+---
+description: Rules to optimize performance and SEO in Next.js applications
+globs: 
+alwaysApply: false
+---
+---
+name: Next.js Performance and SEO Best Practices
+description: Rules to optimize performance and SEO in Next.js applications
+rules:
+  # Image Optimization
+  - name: Use Next.js Image component
+    description: Use Next.js Image component for optimized images
+    matches: regex:.*\.tsx?$
+    prefers:
+      - pattern: <img
+        replace: <Image
+    requires:
+      - regex:import Image from ['"]next/image['"]
+
+  - name: Specify image dimensions
+    description: Always specify width and height for images
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:<Image[^>]*width=\{.*\}[^>]*height=\{.*\}
+
+  - name: Use image priority for LCP
+    description: Use priority prop for important above-the-fold images
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:<Image[^>]*priority[^>]*
+
+  # Link and Navigation
+  - name: Use Next.js Link component
+    description: Use Next.js Link component for client-side navigation
+    matches: regex:.*\.tsx?$
+    prefers:
+      - pattern: <a href=
+        replace: <Link href=
+    requires:
+      - regex:import Link from ['"]next/link['"]
+
+  - name: Prefetch important links
+    description: Use prefetch for important links
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:<Link[^>]*prefetch[^>]*
+
+  # Data Fetching
+  - name: Use appropriate data fetching methods
+    description: Use appropriate Next.js data fetching methods
+    matches: regex:pages/.*\.tsx?$
+    suggests:
+      - regex:export (async )?function getStaticProps
+      - regex:export (async )?function getServerSideProps
+      - regex:export (async )?function getStaticPaths
+
+  - name: Implement ISR where appropriate
+    description: Use Incremental Static Regeneration for dynamic content
+    matches: regex:pages/.*\.tsx?$
+    suggests:
+      - regex:revalidate: \d+
+
+  # Meta Tags and SEO
+  - name: Use Next.js Head component
+    description: Use Next.js Head component for meta tags
+    matches: regex:pages/.*\.tsx?$
+    requires:
+      - regex:import Head from ['"]next/head['"]
+      - regex:<Head>[\s\S]*<\/Head>
+
+  - name: Include essential meta tags
+    description: Include essential SEO meta tags
+    matches: regex:pages/.*\.tsx?$
+    suggests:
+      - regex:<title>
+      - regex:<meta name=["']description["']
+      - regex:<meta property=["']og:
+      - regex:<meta name=["']viewport["']
+
+  - name: Use dynamic meta tags
+    description: Use dynamic meta tags based on page content
+    matches: regex:pages/.*\.tsx?$
+    suggests:
+      - regex:<title>{.*}</title>
+      - regex:<meta name=["']description["'] content={.*} />
+
+  # Font Optimization
+  - name: Use Next.js Font optimization
+    description: Use Next.js Font optimization for web fonts
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:import \{ .*? \} from ['"]next/font/(google|local)['"]
+
+  - name: Apply font display swap
+    description: Use font-display: swap for better performance
+    matches: regex:styles/.*\.css$
+    suggests:
+      - regex:font-display: swap
+
+  # Script Optimization
+  - name: Use Next.js Script component
+    description: Use Next.js Script component for optimized script loading
+    matches: regex:.*\.tsx?$
+    prefers:
+      - pattern: <script
+        replace: <Script
+    requires:
+      - regex:import Script from ['"]next/script['"]
+
+  - name: Defer non-critical scripts
+    description: Defer non-critical scripts
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:<Script[^>]*strategy=["'](mdc:lazyOnload|afterInteractive)["'][^>]*
+
+  # Code Splitting and Bundling
+  - name: Use dynamic imports for code splitting
+    description: Use dynamic imports for heavy components
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:const \w+ = dynamic\(\(\) => import\(
+
+  - name: Lazy load below-the-fold components
+    description: Lazy load components that are below the fold
+    matches: regex:.*\.tsx?$
+    requires:
+      - regex:import dynamic from ['"]next/dynamic['"]
+    suggests:
+      - regex:const \w+ = dynamic\(\(\) => import\(['"]@/components/.*['"]\)\)
+
+  # Caching Strategies
+  - name: Set proper cache control headers
+    description: Set proper cache control headers in API routes
+    matches: regex:pages/api/.*\.ts$
+    suggests:
+      - regex:res\.setHeader\(['"]Cache-Control['"], ['"].*['"]\)
+
+  - name: Use SWR with proper caching strategy
+    description: Configure SWR for optimal caching
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:useSWR\(.*,.*,\s*\{.*revalidateOnFocus
+      - regex:SWRConfig value=\{\{
+
+  # Core Web Vitals Optimization
+  - name: Optimize Largest Contentful Paint (LCP)
+    description: Optimize for LCP by prioritizing important content
+    matches: regex:pages/.*\.tsx?$
+    suggests:
+      - regex:<Image[^>]*priority[^>]*
+      - regex:fetchPriority=["']high["']
+
+  - name: Reduce Cumulative Layout Shift (CLS)
+    description: Reduce CLS by specifying dimensions
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:<Image[^>]*width=\{.*\}[^>]*height=\{.*\}
+      - regex:className=["'].*min-h-\[\d+px\].*["']
+
+  - name: Optimize First Input Delay (FID)
+    description: Optimize for FID by reducing JavaScript execution time
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:useCallback\(
+      - regex:useMemo\(
+      - regex:<React\.Fragment>
+
+  # Responsive Design
+  - name: Use responsive design for all views
+    description: Implement responsive design using Tailwind
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:className=["'].*sm:.*md:.*lg:.*["']
+
+  - name: Implement mobile-first approach
+    description: Use mobile-first approach in styles
+    matches: regex:
+---
+description: Rules to ensure consistent use of shadcn/ui components and Tailwind CSS in a Next.js application
+globs: 
+alwaysApply: false
+---
+---
+name: shadcn/ui and Tailwind CSS Best Practices
+description: Rules to ensure consistent use of shadcn/ui components and Tailwind CSS in a Next.js application
+rules:
+  # General Tailwind Rules
+  - name: Use Tailwind classes for styling
+    description: Use Tailwind utility classes instead of custom CSS
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:className="[^"]*"
+    prefers:
+      - pattern: style={{.*}}
+        replace: className="..."
+      - pattern: <div style={{.*}}>
+        replace: <div className="...">
+
+  - name: Avoid inline styles
+    description: Avoid using inline styles, use Tailwind classes instead
+    matches: regex:.*\.tsx?$
+    avoid:
+      - regex:style={{.*}}
+
+  - name: Use Tailwind responsive classes
+    description: Use Tailwind responsive classes for responsive design
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:className="[^"]*(sm:|md:|lg:|xl:|2xl:)[^"]*"
+
+  - name: Use Tailwind color scheme
+    description: Stick to the Tailwind color palette
+    matches: regex:.*\.tsx?$
+    avoid:
+      - regex:color: ['"]#[0-9a-fA-F]{3,6}['"]
+      - regex:backgroundColor: ['"]#[0-9a-fA-F]{3,6}['"]
+    prefers:
+      - pattern: text-[#......]
+        replace: text-blue-500
+      - pattern: bg-[#......]
+        replace: bg-gray-100
+
+  # shadcn/ui Rules
+  - name: Import shadcn/ui components correctly
+    description: Use the correct import paths for shadcn/ui components
+    matches: regex:.*\.tsx?$
+    prefers:
+      - pattern: import { Button } from "."
+        replace: import { Button } from "@/components/ui/button"
+      - pattern: import { Card } from "."
+        replace: import { Card } from "@/components/ui/card"
+
+  - name: Use shadcn/ui Button component
+    description: Use shadcn/ui Button instead of HTML button
+    matches: regex:.*\.tsx?$
+    prefers:
+      - pattern: <button
+        replace: <Button
+      - pattern: </button>
+        replace: </Button>
+
+  - name: Use shadcn/ui form components
+    description: Use shadcn/ui form components for forms
+    matches: regex:.*\.tsx?$
+    prefers:
+      - pattern: <input
+        replace: <Input
+      - pattern: </input>
+        replace: </Input>
+      - pattern: <select
+        replace: <Select
+      - pattern: </select>
+        replace: </Select>
+
+  - name: Use shadcn/ui Card component
+    description: Use shadcn/ui Card for card UI patterns
+    matches: regex:.*\.tsx?$
+    prefers:
+      - pattern: <div className="[^"]*shadow[^"]*rounded[^"]*">
+        replace: <Card>
+      - pattern: </div>
+        replace: </Card>
+
+  - name: Use proper variant props
+    description: Use proper variant props for shadcn/ui components
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:<Button variant="[^"]*"
+      - regex:<Input variant="[^"]*"
+
+  # Folder Structure for shadcn/ui
+  - name: Maintain shadcn/ui component structure
+    description: Keep shadcn/ui components in the correct directory structure
+    matches: regex:components/ui/.*\.tsx$
+    requires:
+      - regex:^import \* as React from ["']react["'];$
+      - regex:^import \{.*\} from ["']@.*["'];$
+
+  # Tailwind Configuration Rules
+  - name: Use proper Tailwind config
+    description: Ensure Tailwind is properly configured for shadcn/ui
+    matches: regex:tailwind\.config\.(js|ts)$
+    requires:
+      - regex:plugins: \[require\(["']tailwindcss-animate["']\)\]
+      - regex:darkMode: \[["']class["']\]
+
+  # Theme Rules
+  - name: Use theme variables
+    description: Use CSS variables for theming
+    matches: regex:.*\.css$
+    suggests:
+      - regex:--background
+      - regex:--foreground
+      - regex:--primary
+      - regex:--secondary
+
+  - name: Import proper CSS
+    description: Import the correct CSS files
+    matches: regex:.*\.(ts|tsx)$
+    suggests:
+      - regex:import ["']@/styles/globals\.css["']
+
+  # Form Handling with shadcn/ui
+  - name: Use React Hook Form with shadcn/ui
+    description: Use React Hook Form for form handling with shadcn/ui components
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:import \{ useForm \} from ["']react-hook-form["']
+      - regex:import \{ zodResolver \} from ["']@hookform/resolvers/zod["']
+
+  # Layout Rules
+  - name: Use Tailwind's flex and grid utilities
+    description: Use Tailwind's flex and grid utilities for layout
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:className="[^"]*flex[^"]*"
+      - regex:className="[^"]*grid[^"]*"
+    prefers:
+      - pattern: display: "flex"
+        replace: className="flex"
+      - pattern: display: "grid"
+        replace: className="grid"
+
+  # Accessibility Rules
+  - name: Use shadcn/ui accessibility features
+    description: Utilize shadcn/ui's built-in accessibility features
+    matches: regex:.*\.tsx?$
+    suggests:
+      - regex:aria-label
+      - regex:aria-labelledby
+      - regex:role=["'][^"']*["']
+
+---
+description: Any database operations, including migrations, crating and updating tables, adding fields, etc.
+globs: 
+alwaysApply: false
+---
+# Database
+
+- Use supabase for database queries and schema
+- Before performing any database related tasks, make sure to read the database.types.ts first for existing database schema
+- Always use migrations to update the database schema, create them using the command `npx supabase migration new <migration-name>`
+- Afer creating a migration file, run `npx supabase migration up` to apply the migration and run `npx supabase gen types typescript --local > src/types/database.types.ts` to generate the type file
+- When creating a new table, it must have columns for `created_at` and `updated_at` and the values should be set automatically via triggers using `public.handle_created_at()` and `public.handle_updated_at()`
+- Always enable Row Level Security (RLS) on newly create tables via `ALTER TABLE <table_name> ENABLE ROW LEVEL SECURITY;` in migration files and add reasonable policies
+- Always use `await createServerClient()` in the `@/utils/supabase/server` to create supabase client in server components and `createBrowserClient()` in the `@/utils/supabase/client` to create supabase client in client components
+- Always maintain backwards compatibility when generating migrations
+
+## Useful supabase commands
+
+supabase start
+
+supabase migration create <migration_name>
+
+supabase migration up
+
+supabase db diff -f <migration_name>
+
+supabase db reset
+
+supabase db dump --data-only --local -f seed.sql
+
+supabase db push
+
+---
+description: Rules to enforce consistent testing practices using Jest and Playwright
+globs: 
+alwaysApply: false
+---
+name: Testing Standards
+description: Rules to enforce consistent testing practices using Jest and Playwright
+rules:
+  - name: Jest Test File Structure
+    description: Enforce consistent test file organization
+    matches: regex:.*\.test\.(ts|tsx)$
+    requires:
+      - regex:describe\(.*,.*=>\s*{
+      - regex:it\(.*,.*=>\s*{
+      - regex:expect\(.*\)
+    suggests:
+      - comment: Group related tests
+        regex:describe\(.*{
+      - comment: Use clear test descriptions
+        regex:it\('should.*',
+      - comment: Include setup and teardown
+        regex:beforeEach\(
+      - comment: Clean up after tests
+        regex:afterEach\(
+
+  - name: Playwright E2E Tests
+    description: Standards for E2E testing with Playwright
+    matches: regex:e2e/.*\.spec\.(ts|tsx)$
+    requires:
+      - regex:test\(.*,.*async.*\(\{.*page.*\}\)
+      - regex:await.*expect
+    suggests:
+      - comment: Use page fixtures
+        regex:test\.beforeEach\(async.*\(\{.*page.*\}\)
+      - comment: Include accessibility tests
+        regex:await.*checkA11y\(
+      - comment: Test responsive layouts
+        regex:await.*page\.setViewportSize
+      - comment: Test error states
+        regex:try.*catch.*expect
+
+  - name: Component Testing
+    description: Standards for component testing
+    matches: regex:.*\.test\.(ts|tsx)$
+    suggests:
+      - comment: Test component rendering
+        regex:render\(.*\)
+      - comment: Test user interactions
+        regex:fireEvent\.|userEvent\.
+      - comment: Test accessibility
+        regex:toHaveAccessibleName|toHaveRole
+      - comment: Test props
+        regex:rerender\(.*\)
+
+  - name: Mock Standards
+    description: Standards for mocking in tests
+    matches: regex:.*\.(test|spec)\.(ts|tsx)$
+    suggests:
+      - comment: Mock external dependencies
+        regex:jest\.mock\(
+      - comment: Use consistent mock naming
+        regex:mock[A-Z].*
+      - comment: Reset mocks between tests
+        regex:jest\.clearAllMocks\(
+      - comment: Mock API calls
+        regex:fetch\.mock|axios\.mock
+
+  - name: Test Coverage
+    description: Standards for test coverage
+    matches: regex:jest\.config\.(js|ts)$
+    requires:
+      - comment: Enable coverage reporting
+        regex:collectCoverage:\s*true
+      - comment: Set coverage thresholds
+        regex:coverageThreshold:\s*{
+
+  - name: Test Utils
+    description: Standards for test utilities
+    matches: regex:test/.*utils\.(ts|tsx)$
+    suggests:
+      - comment: Create test data factories
+        regex:export const create[A-Z].*=
+      - comment: Create common test helpers
+        regex:export const test[A-Z].*=
+
+  - name: Snapshot Testing
+    description: Standards for snapshot testing
+    matches: regex:.*\.(test|spec)\.(ts|tsx)$
+    suggests:
+      - comment: Use inline snapshots for small components
+        regex:toMatchInlineSnapshot
+      - comment: Use file snapshots for large components
+        regex:toMatchSnapshot
+      - comment: Update snapshots with changes
+        regex:test\.each
+
+  - name: Performance Testing
+    description: Standards for performance testing
+    matches: regex:e2e/.*performance.*\.(ts|tsx)$
+    suggests:
+      - comment: Measure page load times
+        regex:page\.waitForLoadState
+      - comment: Test resource loading
+        regex:page\.waitForResponse
+      - comment: Measure time to interactive
+        regex:page\.waitForSelector
